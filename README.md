@@ -1,3 +1,3 @@
 # MSc_dissertation
 
-has to have gluonts v0.14
+Version of gluonts has to be 0.14.0 in the requirements.txt in lag-llama submodule
