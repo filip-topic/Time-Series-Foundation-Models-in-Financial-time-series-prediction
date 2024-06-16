@@ -2,7 +2,7 @@ create functionality to calculate prediction metrics
 
 implement the following models:
     benchmark:
-        ARIMA
+        ARIMA     done
         XGboost
         DeepAR
         Informer
