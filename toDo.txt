@@ -1,12 +1,15 @@
 create functionality to calculate prediction metrics
 
-implement the following models:
+implement the basic version of following models:
     benchmark:
-        ARIMA     done
-        XGboost
+        ARIMA       DONE
+        XGboost     DONE
         DeepAR
         Informer
     main:
         TimeGpt-1
+        Lag-llama    DONE
+    challenger:
+        Prophet      DONE
 
 more literature reviev
