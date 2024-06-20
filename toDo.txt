@@ -4,7 +4,7 @@ implement the basic version of following models:
     benchmark:
         ARIMA       DONE
         XGboost     DONE
-        DeepAR
+        DeepAR      DONE but issues with visualization
         Informer
     main:
         TimeGpt-1
