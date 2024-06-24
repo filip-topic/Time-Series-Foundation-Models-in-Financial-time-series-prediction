@@ -15,6 +15,24 @@ implement the basic version of following models:
     challenger:
         Prophet      DONE
 
+
+Modularize the project       DONE
+
+
 more literature reviev
 
 
+create data loader      partly DONE
+
+
+create functionality for the following models:
+    benchmark:
+        ARIMA       
+        XGboost     
+        DeepAR      
+        Informer    
+    main:
+        TimeGpt-1
+        Lag-llama    
+    challenger:
+        Prophet      
