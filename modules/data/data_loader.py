@@ -1,9 +1,10 @@
 import yfinance as yf
 import requests
 import pandas as pd
+from datetime import datetime, timedelta
 
 def get_stock_price_data(ticker: str, start: str, end: str):
-    stock_data = yf.download(ticker, start=start, end=end)
+    stock_data = yf.download(ticker, start=start, end=end, interval="1d")["Adj Close"]
     return stock_data
 
 def get_inflation_data(country_code: str, start_year: int, end_year: int):
@@ -54,6 +55,15 @@ def get_data(data_type: str, **kwargs):
     else:
         raise ValueError("Invalid data_type. Expected 'stock', 'inflation', or 'interest_rate'.")
     
+# for simple model testing purposes
+def get_simle_data():
+    end_date = datetime.today()
+    start_date = end_date - timedelta(days=365)
+    apple_stock_price = get_stock_price_data("AAPL", start_date, end_date)
+    apple_stock_price = apple_stock_price.reset_index()
+    apple_stock_price.columns = ['ds', 'y']
+    return apple_stock_price
+
 
 if __name__ == "__main__":
     inflation_data = get_inflation_data('USA', 2000, 2020)
