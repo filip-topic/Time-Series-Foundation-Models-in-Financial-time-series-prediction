@@ -550,7 +550,7 @@ class LagLlamaModel(nn.Module):
 
         # forward the LLaMA model itself
         x = self.transformer.wte(
-            transformer_input
+            transformer_input.float()    # modified by FILIP
         )  # token embeddings of shape (b, t, n_embd_per_head*n_head) # (bsz, context_length+(pred_len-1), n_embd_per_head*n_head)
 
         for block in self.transformer.h:
