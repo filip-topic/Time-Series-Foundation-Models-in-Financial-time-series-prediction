@@ -55,6 +55,29 @@ def get_data(data_type: str, **kwargs):
     else:
         raise ValueError("Invalid data_type. Expected 'stock', 'inflation', or 'interest_rate'.")
     
+def get_all_stock_data(years=1, frequency="daily"):
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=365 * years)
+    
+    freq_map = {
+        "daily": "1d",
+        "weekly": "1wk",
+        "monthly": "1mo"
+    }
+    
+    if frequency not in freq_map:
+        raise ValueError("Frequency must be 'daily', 'weekly', or 'monthly'.")
+    
+    sp500_tickers = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')[0]['Symbol'].tolist()
+    
+    data = yf.download(sp500_tickers, start=start_date, end=end_date, interval=freq_map[frequency])['Adj Close']
+    
+    columns = data.columns
+    data = data.reset_index()
+    data.columns = ["ds"] + list(columns)
+    return data
+
+    
 # for simple model testing purposes
 def get_simle_data():
     end_date = datetime.today()
