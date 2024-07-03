@@ -25,6 +25,9 @@ def write_csv(data, filename):
 
 years = 1
 frequency = "daily"
+
 stock_data = data_loader.get_all_stock_data(years=years, frequency=frequency)
 write_csv(stock_data, f"all_sp500_stocks_{years}years_{frequency}")
 
+returns_data = data_loader.get_all_stock_returns(years=years, frequency=frequency)
+write_csv(returns_data, f"all_sp500_returns_{years}years_{frequency}")

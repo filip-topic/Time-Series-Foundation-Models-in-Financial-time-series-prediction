@@ -75,9 +75,30 @@ def get_all_stock_data(years=1, frequency="daily"):
     columns = data.columns
     data = data.reset_index()
     data.columns = ["ds"] + list(columns)
+
+    data = data.loc[:, ~data.iloc[0].isna()]
+
+    data = data.dropna(axis=1, how='all')
+
+    data = data.fillna(method='ffill')
+
     return data
 
     
+def get_all_stock_returns(years=1, frequency="daily"):
+    df = get_all_stock_data(years = years, frequency=frequency)
+    returns_df = df.copy()
+    
+    # Calculate returns for each column except the first one ('ds')
+    for col in returns_df.columns[1:]:
+        returns_df[col] = returns_df[col].pct_change()
+    
+    # Drop the first row because pct_change will result in NaN for the first entry
+    returns_df.dropna(inplace=True)
+    
+    return returns_df
+    
+
 # for simple model testing purposes
 def get_simle_data():
     end_date = datetime.today()
