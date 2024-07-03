@@ -1,7 +1,8 @@
 import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import pandas as pd
 
-def evaluate(actual, **predictions):
+def print_evaluate(actual, **predictions):
     for name, pred in predictions.items():
         mse = mean_squared_error(actual, pred)
         mae = mean_absolute_error(actual, pred)
@@ -14,6 +15,15 @@ def evaluate(actual, **predictions):
         print(f"R-squared (R^2): {r2}")
         print(f"Root Mean Squared Error (RMSE): {rmse}")
         print("-" * 30)
+
+def get_single_evaluation(actual, prediction):
+    return list(mean_squared_error(actual, prediction), mean_absolute_error(actual, prediction), r2_score(actual, prediction), np.sqrt(mean_squared_error(actual, prediction)))
+
+def get_multiple_evaluations(actual, **predictions):
+    output = pd.DataFrame()
+    for name, pred in predictions.items():
+        output[name] = get_single_evaluation(actual, pred)
+    return output
 
 # Example usage:
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 def get_stock_price_data(ticker: str, start: str, end: str):
-    stock_data = yf.download(ticker, start=start, end=end, interval="1d")["Adj Close"]
+    stock_data = yf.download(ticker, start=start, end=end, interval="1d")["Close"]
     return stock_data
 
 def get_inflation_data(country_code: str, start_year: int, end_year: int):
@@ -70,7 +70,7 @@ def get_all_stock_data(years=1, frequency="daily"):
     
     sp500_tickers = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')[0]['Symbol'].tolist()
     
-    data = yf.download(sp500_tickers, start=start_date, end=end_date, interval=freq_map[frequency])['Adj Close']
+    data = yf.download(sp500_tickers, start=start_date, end=end_date, interval=freq_map[frequency])['Close']
     
     columns = data.columns
     data = data.reset_index()
