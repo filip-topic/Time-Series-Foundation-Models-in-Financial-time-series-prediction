@@ -14,10 +14,15 @@ from modules.models import arima, lag_llama
 from modules.data import data_loader, data_splitter, data_reader
 
 def fill_results(name, results, y_true, y_pred):
-    results["r2"][name].append(r2_score(y_true, y_pred))
-    results["mse"][name].append(mean_squared_error(y_true, y_pred))
-    results["mae"][name].append(mean_absolute_error(y_true, y_pred))
-    results["rmse"][name].append(np.sqrt(mean_squared_error(y_true, y_pred)))
+    if len(y_true) == 1:
+        results[name].append(y_pred)
+        if len(results["true"]) == 0 or results["true"][-1] != y_true: # this is to make sure we dont double append the "true" list
+            results["true"].append(y_true)
+    else:
+        results["r2"][name].append(r2_score(y_true, y_pred))
+        results["mse"][name].append(mean_squared_error(y_true, y_pred))
+        results["mae"][name].append(mean_absolute_error(y_true, y_pred))
+        results["rmse"][name].append(np.sqrt(mean_squared_error(y_true, y_pred)))
     return results
 
 # takes multi-column data
@@ -27,13 +32,10 @@ def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae",
         prediction_length = 1
 
     if prediction_length == 1:
-        
-
-
-
-    results = {metric: {model: [] for model in models} for metric in metrics}
-
-    
+        results = {model: [] for model in models}
+        results["true"] = []
+    else:
+        results = {metric: {model: [] for model in models} for metric in metrics}
     
     first_col = True
     
@@ -45,7 +47,7 @@ def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae",
             continue
         
         # this is here just to speed up testing
-        if i == 10:
+        if i == 5:
             break
 
         i = i+1
@@ -61,6 +63,8 @@ def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae",
             arima_model = arima.get_autoarima(train)
             arima_predictions = arima.autoarima_predictions(arima_model, prediction_length)
             y_pred_arima = arima_predictions
+            if tscv:
+                y_pred_arima = y_pred_arima[-1]
             results = fill_results("arima", results, y_true, y_pred_arima)
 
         
@@ -68,10 +72,26 @@ def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae",
             lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_length)
             lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis=0))
             y_pred_llama = lag_llama_predictions
+            if tscv:
+                y_pred_llama = y_pred_llama[-1]
             results = fill_results("llama", results, y_true, y_pred_llama)
             
         
         print(column + f" done  {i}")
         print("------------")
     
+    
+
+    if tscv:
+        prediction = results
+        results = {metric: {model: [] for model in models} for metric in metrics}
+        for model in prediction.keys():
+            if (model != "true"):
+                results["r2"][model] = r2_score(prediction["true"], prediction[model])
+                results["mse"][model] = mean_squared_error(prediction["true"], prediction[model])
+                results["mae"][model] = mean_absolute_error(prediction["true"], prediction[model])
+                results["rmse"][model] = np.sqrt(mean_squared_error(prediction["true"], prediction[model]))
+        return results, prediction
+
+
     return results
