@@ -21,9 +21,19 @@ def fill_results(name, results, y_true, y_pred):
     return results
 
 # takes multi-column data
-def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae", "rmse"], prediction_length=10):
+def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae", "rmse"], prediction_length=1, tscv = False):
+
+    if tscv:
+        prediction_length = 1
+
+    if prediction_length == 1:
+        
+
+
 
     results = {metric: {model: [] for model in models} for metric in metrics}
+
+    
     
     first_col = True
     
@@ -42,6 +52,7 @@ def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae",
         column_data = data[["ds", column]]
         column_data.columns = ["ds", "y"]
         
+
         train, test = data_splitter.split_data(column_data, prediction_length)
         
         y_true = list(test["y"])
