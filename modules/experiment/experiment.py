@@ -16,7 +16,7 @@ from modules.data import data_loader, data_splitter, data_reader
 def fill_results(name, results, y_true, y_pred):
     if len(y_true) == 1:
         results[name].append(y_pred)
-        if len(results["true"]) == 0 or results["true"][-1] != y_true: # this is to make sure we dont double append the "true" list
+        if len(results["true"]) == 0 or results["true"][-1] != y_true: # this is to make sure we dont double append the "true" list and also not to subindex an empty list
             results["true"].append(y_true)
     else:
         results["r2"][name].append(r2_score(y_true, y_pred))
@@ -26,7 +26,7 @@ def fill_results(name, results, y_true, y_pred):
     return results
 
 # takes multi-column data
-def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae", "rmse"], prediction_length=1, tscv = False):
+def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae", "rmse"], prediction_length=1, tscv = False, context_length = 64):
 
     if tscv:
         prediction_length = 1
@@ -47,8 +47,8 @@ def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae",
             continue
         
         # this is here just to speed up testing
-        if i == 5:
-            break
+        #if i == 5:
+            #break
 
         i = i+1
         column_data = data[["ds", column]]
@@ -69,7 +69,7 @@ def run_experiment(data, models=["arima", "llama"], metrics=["r2", "mse", "mae",
 
         
         if "llama" in models:
-            lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_length)
+            lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_length, context_length=context_length)
             lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis=0))
             y_pred_llama = lag_llama_predictions
             if tscv:
