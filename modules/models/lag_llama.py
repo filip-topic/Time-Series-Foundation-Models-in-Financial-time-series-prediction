@@ -1,8 +1,9 @@
 import os
+import sys
 
 old_wd = os.getcwd()
 
-os.chdir(old_wd + "\\modules\\models\\llama")
+sys.path.append(old_wd + "\\modules\\models\\llama")
 
 from itertools import islice
 
@@ -16,10 +17,14 @@ from gluonts.dataset.repository.datasets import get_dataset
 from gluonts.dataset.pandas import PandasDataset
 import pandas as pd
 
-from lag_llama.gluon.estimator import LagLlamaEstimator
+
+
+from lag_llama.gluon.estimator import LagLlamaEstimator  
+
+
 
 def get_lag_llama_predictions(dataset, prediction_length, device, context_length=32, use_rope_scaling=False, num_samples=100):
-    ckpt = torch.load("lag-llama.ckpt", map_location=device) # Uses GPU since in this Colab we use a GPU.
+    ckpt = torch.load("modules/models/llama/lag-llama.ckpt", map_location=device) # Uses GPU since in this Colab we use a GPU.    # also modified the path FILIP
     estimator_args = ckpt["hyper_parameters"]["model_kwargs"]
 
     rope_scaling_arguments = {
@@ -28,7 +33,7 @@ def get_lag_llama_predictions(dataset, prediction_length, device, context_length
     }
 
     estimator = LagLlamaEstimator(
-        ckpt_path="lag-llama.ckpt",
+        ckpt_path="modules/models/llama/lag-llama.ckpt",   # modified by FILIPS
         prediction_length=prediction_length,
         context_length=context_length, # Lag-Llama was trained with a context length of 32, but can work with any context length
 

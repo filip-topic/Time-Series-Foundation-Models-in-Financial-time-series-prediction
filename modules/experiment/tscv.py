@@ -10,8 +10,30 @@ base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 # Add the modules directory to the sys.path
 sys.path.append(base_dir)
 
+
+
+
 from modules.models import arima, lag_llama
 
+
+def mean_directional_accuracy(actual, predicted):
+    
+    actual = pd.Series(actual)
+    predicted = pd.Series(predicted)
+
+    actual_diff = actual.diff().dropna()
+    predicted_diff = predicted.diff().dropna()
+    
+    # Align the series after dropping NaN values due to differencing
+    actual_diff = actual_diff[1:]
+    predicted_diff = predicted_diff[1:]
+    
+    correct_directions = (actual_diff * predicted_diff > 0).sum()
+    total_directions = len(actual_diff)
+    
+    mda_value = correct_directions / total_directions
+    
+    return mda_value
 
 
 def get_tscv_results(data, prediction_horizon, context_length, folds):
@@ -19,7 +41,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
     tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon)
 
     models=["arima", "llama"]
-    metrics=["r2", "mse", "mae", "rmse"]
+    metrics=["r2", "mse", "mae", "rmse", "mda"]
     results = {metric: {model: {f"fold_{i}": [] for i in range(folds)} for model in models} for metric in metrics}
 
     series = data["y"]
@@ -50,11 +72,13 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
         results["mse"]["arima"][f"fold_{i}"].append(mean_squared_error(valid, autoarima_predictions))
         results["mae"]["arima"][f"fold_{i}"].append(mean_absolute_error(valid, autoarima_predictions))
         results["rmse"]["arima"][f"fold_{i}"].append(np.sqrt(mean_squared_error(valid, autoarima_predictions)))
+        results["mda"]["arima"][f"fold_{i}"].append(mean_directional_accuracy(valid, autoarima_predictions))
 
         results["r2"]["llama"][f"fold_{i}"].append(r2_score(valid, lag_llama_predictions))
         results["mse"]["llama"][f"fold_{i}"].append(mean_squared_error(valid, lag_llama_predictions))
         results["mae"]["llama"][f"fold_{i}"].append(mean_absolute_error(valid, lag_llama_predictions))
         results["rmse"]["llama"][f"fold_{i}"].append(np.sqrt(mean_squared_error(valid, lag_llama_predictions)))
+        results["mda"]["llama"][f"fold_{i}"].append(mean_directional_accuracy(valid, lag_llama_predictions))
 
         i += 1
     
@@ -62,4 +86,9 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
 
 
 
+if __name__ == "__main__":
+    
+    actual = pd.Series([100, 102, 101, 103, 105])
+    predicted = pd.Series([100, 101, 102, 104, 106])
 
+    print(f"Mean Directional Accuracy: {mean_directional_accuracy(actual, predicted)}")
