@@ -60,9 +60,12 @@ def get_all_stock_data(years=1, frequency="daily"):
     start_date = end_date - timedelta(days=365 * years)
     
     freq_map = {
+        "minutely": "1m",
+        "hourly": "60m",
         "daily": "1d",
         "weekly": "1wk",
-        "monthly": "1mo"
+        "monthly": "1mo",
+        "quarterly": "3mo"
     }
     
     if frequency not in freq_map:

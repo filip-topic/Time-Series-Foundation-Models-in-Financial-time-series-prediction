@@ -13,7 +13,7 @@ sys.path.append(base_dir)
 
 
 
-from modules.models import arima, lag_llama
+from modules.models import arima, lag_llama, autoregressor
 
 
 def mean_directional_accuracy(actual, predicted, last_train_point):
@@ -42,13 +42,33 @@ def mean_directional_accuracy(actual, predicted, last_train_point):
     return mda_value
 
 
+def get_summary(results):
+    summary = pd.DataFrame({
+    'r2': [results['r2'].mean(), results['r2'].median(), results['r2'].std()],
+    'mse': [results['mse'].mean(), results['mse'].median(), results['mse'].std()],
+    'mae': [results['mae'].mean(), results['mae'].median(), results['mae'].std()],
+    'rmse': [results['rmse'].mean(), results['rmse'].median(), results['rmse'].std()],
+    'mda': [results['mda'].mean(), results['mda'].median(), results['mda'].std()]
+    }, index=['mean', 'median', 'std'])
+    return summary
+
+
 def get_tscv_results(data, prediction_horizon, context_length, folds):
 
     tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon)
 
+    """
     models=["arima", "llama"]
-    metrics=["r2", "mse", "mae", "rmse", "mda"]
     results = {metric: {model: {f"fold_{i}": [] for i in range(folds)} for model in models} for metric in metrics}
+    """
+    
+    results = []
+
+    metrics=["r2", "mse", "mae", "rmse", "mda"] 
+
+    arima_results = pd.DataFrame(columns=metrics)
+    llama_results = pd.DataFrame(columns= metrics)
+    autoregressor_results = pd.DataFrame(columns=metrics)
 
     series = data["y"]
 
@@ -65,6 +85,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
         autoarima_predictions = arima.autoarima_predictions(arima_model, prediction_horizon)
         lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
+        autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
 
         # for my own testing purposes
         """
@@ -73,6 +94,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
         print(valid)
         """
 
+        """
         # recording the metrics
         results["r2"]["arima"][f"fold_{i}"].append(r2_score(valid, autoarima_predictions))
         results["mse"]["arima"][f"fold_{i}"].append(mean_squared_error(valid, autoarima_predictions))
@@ -85,7 +107,32 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
         results["mae"]["llama"][f"fold_{i}"].append(mean_absolute_error(valid, lag_llama_predictions))
         results["rmse"]["llama"][f"fold_{i}"].append(np.sqrt(mean_squared_error(valid, lag_llama_predictions)))
         results["mda"]["llama"][f"fold_{i}"].append(mean_directional_accuracy(valid, lag_llama_predictions))
+        """
 
+        arima_metrics = [r2_score(valid, autoarima_predictions), 
+               mean_squared_error(valid, autoarima_predictions), 
+               mean_absolute_error(valid, autoarima_predictions),
+               np.sqrt(mean_squared_error(valid, autoarima_predictions)),
+               mean_directional_accuracy(valid, autoarima_predictions, train["y"].iloc[-1])]
+    
+        llama_metrics = [r2_score(valid, lag_llama_predictions), 
+               mean_squared_error(valid, lag_llama_predictions), 
+               mean_absolute_error(valid, lag_llama_predictions),
+               np.sqrt(mean_squared_error(valid, lag_llama_predictions)),
+               mean_directional_accuracy(valid, lag_llama_predictions, train["y"].iloc[-1])]
+    
+        autoregressor_metrics = [r2_score(valid, autoregressor_predictions), 
+               mean_squared_error(valid, autoregressor_predictions), 
+               mean_absolute_error(valid, autoregressor_predictions),
+               np.sqrt(mean_squared_error(valid, autoregressor_predictions)),
+               mean_directional_accuracy(valid, autoregressor_predictions, train["y"].iloc[-1])]
+
+        arima_results = pd.concat([arima_results, pd.DataFrame([arima_metrics], columns=metrics)], ignore_index=True)
+        llama_results = pd.concat([llama_results, pd.DataFrame([llama_metrics], columns=metrics)], ignore_index=True)
+        autoregressor_results = pd.concat([autoregressor_results, pd.DataFrame([autoregressor_metrics], columns=metrics)], ignore_index=True)
+
+        results = [arima_results, llama_results, autoregressor_results]
+        
         i += 1
     
     return results

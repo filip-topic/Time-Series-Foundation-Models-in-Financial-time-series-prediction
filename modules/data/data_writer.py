@@ -23,8 +23,9 @@ def write_csv(data, filename):
     print(f"Data has been written to '{file_path}'.")
 
 
-years = 1
-frequency = "daily"
+years = 0.01
+frequency = "minutely"
+
 
 #stock data
 stock_data = data_loader.get_all_stock_data(years=years, frequency=frequency)
@@ -33,6 +34,13 @@ write_csv(stock_data, f"all_sp500_stocks_{years}years_{frequency}")
 #return data
 returns_data = data_loader.get_all_stock_returns(years=years, frequency=frequency)
 write_csv(returns_data, f"all_sp500_returns_{years}years_{frequency}")
+
+
+
+
+
+
+
 
 #inflation data
 country_code = "USA"
