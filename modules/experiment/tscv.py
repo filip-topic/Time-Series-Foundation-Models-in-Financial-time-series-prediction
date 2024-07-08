@@ -16,17 +16,23 @@ sys.path.append(base_dir)
 from modules.models import arima, lag_llama
 
 
-def mean_directional_accuracy(actual, predicted):
+def mean_directional_accuracy(actual, predicted, last_train_point):
     
-    actual = pd.Series(actual)
-    predicted = pd.Series(predicted)
+    a = actual.copy()
+    p = predicted.copy()
 
-    actual_diff = actual.diff().dropna()
-    predicted_diff = predicted.diff().dropna()
+    a.append(last_train_point)
+    p.append(last_train_point)
+
+    a = pd.Series(a)
+    p = pd.Series(p)
+
+    actual_diff = a.diff().dropna()
+    predicted_diff = p.diff().dropna()
     
     # Align the series after dropping NaN values due to differencing
-    actual_diff = actual_diff[1:]
-    predicted_diff = predicted_diff[1:]
+    #actual_diff = actual_diff 
+    #predicted_diff = predicted_diff 
     
     correct_directions = (actual_diff * predicted_diff > 0).sum()
     total_directions = len(actual_diff)
