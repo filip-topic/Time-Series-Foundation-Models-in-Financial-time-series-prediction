@@ -23,21 +23,33 @@ def write_csv(data, filename):
     print(f"Data has been written to '{file_path}'.")
 
 
-years = 0.01
-frequency = "minutely"
+#years = 0.01
+frequency = ["minutely",
+        "hourly",
+        "daily",
+        "weekly",
+        "monthly",
+        "quarterly"]
 
 
-#stock data
-stock_data = data_loader.get_all_stock_data(years=years, frequency=frequency)
-write_csv(stock_data, f"all_sp500_stocks_{years}years_{frequency}")
+for f in frequency:
 
-#return data
-returns_data = data_loader.get_all_stock_returns(years=years, frequency=frequency)
-write_csv(returns_data, f"all_sp500_returns_{years}years_{frequency}")
+    # different time periods for different frequencies
+    years = 1
+    if frequency == "quarterly" or frequency == "monthly":
+        years = 10
+    elif frequency == "hourly":
+        years = 0.1
+    elif frequency == "minutely":
+        years = 0.01
 
+    #stock data
+    stock_data = data_loader.get_all_stock_data(years=years, frequency=frequency)
+    write_csv(stock_data, f"all_sp500_stocks_{years}years_{frequency}")
 
-
-
+    #return data
+    returns_data = data_loader.get_all_stock_returns(years=years, frequency=frequency)
+    write_csv(returns_data, f"all_sp500_returns_{years}years_{frequency}")
 
 
 
