@@ -32,15 +32,37 @@ frequency = ["minutely",
         "quarterly"]
 
 
+# writing simple data
 for f in frequency:
 
     # different time periods for different frequencies
     years = 1
-    if frequency == "quarterly" or frequency == "monthly":
+    if f == "quarterly" or f == "monthly":
         years = 10
-    elif frequency == "hourly":
+    elif f == "hourly":
         years = 0.1
-    elif frequency == "minutely":
+    elif f == "minutely":
+        years = 0.01
+
+    #stock data
+    stock_data = data_loader.get_stock_price_data(ticker="AAPL", years=years, frequency=f)
+    write_csv(stock_data, f"AAPL_stock_{years}years_{f}_simple")
+
+    #return data
+    returns_data = data_loader.get_stock_returns(ticker="AAPL", years=years, frequency=f)
+    write_csv(returns_data, f"AAPL_returns_{years}years_{f}_simple")
+
+
+"""
+for f in frequency:
+
+    # different time periods for different frequencies
+    years = 1
+    if f == "quarterly" or f == "monthly":
+        years = 10
+    elif f == "hourly":
+        years = 0.1
+    elif f == "minutely":
         years = 0.01
 
     #stock data
@@ -50,6 +72,7 @@ for f in frequency:
     #return data
     returns_data = data_loader.get_all_stock_returns(years=years, frequency=frequency)
     write_csv(returns_data, f"all_sp500_returns_{years}years_{frequency}")
+"""
 
 
 

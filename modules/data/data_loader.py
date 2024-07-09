@@ -3,9 +3,32 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 
-def get_stock_price_data(ticker: str, start: str, end: str):
-    stock_data = yf.download(ticker, start=start, end=end, interval="1d")["Close"]
-    return stock_data
+def get_stock_price_data(ticker: str, years = 1, frequency = "daily"):
+    freq_map = {
+        "minutely": "1m",
+        "hourly": "60m",
+        "daily": "1d",
+        "weekly": "1wk",
+        "monthly": "1mo",
+        "quarterly": "3mo"
+    }
+
+    end = datetime.now()
+    start = end - timedelta(days=365 * years)
+    data = yf.download(ticker, start=start, end=end, interval=freq_map[frequency])["Close"]
+
+    # Reset the index to move the date from the index to a column
+    data = data.reset_index()
+
+    # Rename the columns
+    data.columns = ['ds', ticker]
+
+    # Clean the data
+    data = data.loc[:, ~data.iloc[0].isna()]
+    data = data.dropna(axis=1, how='all')
+    data = data.fillna(method='ffill')
+
+    return data
 
 def get_inflation_data(country_code: str, start_year: int, end_year: int):
     url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/FP.CPI.TOTL?date={start_year}:{end_year}&format=json"
@@ -90,6 +113,20 @@ def get_all_stock_data(years=1, frequency="daily"):
     
 def get_all_stock_returns(years=1, frequency="daily"):
     df = get_all_stock_data(years = years, frequency=frequency)
+    returns_df = df.copy()
+    
+    # Calculate returns for each column except the first one ('ds')
+    for col in returns_df.columns[1:]:
+        returns_df[col] = returns_df[col].pct_change()
+    
+    # Drop the first row because pct_change will result in NaN for the first entry
+    returns_df.dropna(inplace=True)
+    
+    return returns_df
+
+def get_stock_returns(ticker, years = 1, frequency = "daily"):
+    df = get_stock_price_data(ticker=ticker, years=years, frequency=frequency)
+
     returns_df = df.copy()
     
     # Calculate returns for each column except the first one ('ds')
