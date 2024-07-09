@@ -30,10 +30,6 @@ def mean_directional_accuracy(actual, predicted, last_train_point):
     actual_diff = a.diff().dropna()
     predicted_diff = p.diff().dropna()
     
-    # Align the series after dropping NaN values due to differencing
-    #actual_diff = actual_diff 
-    #predicted_diff = predicted_diff 
-    
     correct_directions = (actual_diff * predicted_diff > 0).sum()
     total_directions = len(actual_diff)
     
@@ -52,15 +48,18 @@ def get_summary(results):
     }, index=['mean', 'median', 'std'])
     return summary
 
+def fill_metrics(valid, predictions, last_train):
+    metrics = [r2_score(valid, predictions), 
+               mean_squared_error(valid, predictions), 
+               mean_absolute_error(valid, predictions),
+               np.sqrt(mean_squared_error(valid, predictions)),
+               mean_directional_accuracy(valid, predictions, last_train)]
+    return metrics
+
 
 def get_tscv_results(data, prediction_horizon, context_length, folds):
 
     tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon)
-
-    """
-    models=["arima", "llama"]
-    results = {metric: {model: {f"fold_{i}": [] for i in range(folds)} for model in models} for metric in metrics}
-    """
     
     results = []
 
@@ -87,61 +86,21 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
 
-        # for my own testing purposes
-        """
-        print(autoarima_predictions)
-        print(lag_llama_predictions)
-        print(valid)
-        """
+        last_train = train["y"].iloc[-1]
 
-        """
-        # recording the metrics
-        results["r2"]["arima"][f"fold_{i}"].append(r2_score(valid, autoarima_predictions))
-        results["mse"]["arima"][f"fold_{i}"].append(mean_squared_error(valid, autoarima_predictions))
-        results["mae"]["arima"][f"fold_{i}"].append(mean_absolute_error(valid, autoarima_predictions))
-        results["rmse"]["arima"][f"fold_{i}"].append(np.sqrt(mean_squared_error(valid, autoarima_predictions)))
-        results["mda"]["arima"][f"fold_{i}"].append(mean_directional_accuracy(valid, autoarima_predictions))
+        # calculating metrics for this fold
+        arima_metrics = fill_metrics(valid, autoarima_predictions, last_train)
+        llama_metrics = fill_metrics(valid, lag_llama_predictions, last_train)
+        autoregressor_metrics = fill_metrics(valid, autoregressor_predictions, last_train)
 
-        results["r2"]["llama"][f"fold_{i}"].append(r2_score(valid, lag_llama_predictions))
-        results["mse"]["llama"][f"fold_{i}"].append(mean_squared_error(valid, lag_llama_predictions))
-        results["mae"]["llama"][f"fold_{i}"].append(mean_absolute_error(valid, lag_llama_predictions))
-        results["rmse"]["llama"][f"fold_{i}"].append(np.sqrt(mean_squared_error(valid, lag_llama_predictions)))
-        results["mda"]["llama"][f"fold_{i}"].append(mean_directional_accuracy(valid, lag_llama_predictions))
-        """
-
-        arima_metrics = [r2_score(valid, autoarima_predictions), 
-               mean_squared_error(valid, autoarima_predictions), 
-               mean_absolute_error(valid, autoarima_predictions),
-               np.sqrt(mean_squared_error(valid, autoarima_predictions)),
-               mean_directional_accuracy(valid, autoarima_predictions, train["y"].iloc[-1])]
-    
-        llama_metrics = [r2_score(valid, lag_llama_predictions), 
-               mean_squared_error(valid, lag_llama_predictions), 
-               mean_absolute_error(valid, lag_llama_predictions),
-               np.sqrt(mean_squared_error(valid, lag_llama_predictions)),
-               mean_directional_accuracy(valid, lag_llama_predictions, train["y"].iloc[-1])]
-    
-        autoregressor_metrics = [r2_score(valid, autoregressor_predictions), 
-               mean_squared_error(valid, autoregressor_predictions), 
-               mean_absolute_error(valid, autoregressor_predictions),
-               np.sqrt(mean_squared_error(valid, autoregressor_predictions)),
-               mean_directional_accuracy(valid, autoregressor_predictions, train["y"].iloc[-1])]
-
+        # concating the metrics for current fold to the results
         arima_results = pd.concat([arima_results, pd.DataFrame([arima_metrics], columns=metrics)], ignore_index=True)
         llama_results = pd.concat([llama_results, pd.DataFrame([llama_metrics], columns=metrics)], ignore_index=True)
         autoregressor_results = pd.concat([autoregressor_results, pd.DataFrame([autoregressor_metrics], columns=metrics)], ignore_index=True)
-
-        results = [arima_results, llama_results, autoregressor_results]
         
         i += 1
+
+    results = [arima_results, llama_results, autoregressor_results]
     
     return results
 
-
-
-if __name__ == "__main__":
-    
-    actual = pd.Series([100, 102, 101, 103, 105])
-    predicted = pd.Series([100, 101, 102, 104, 106])
-
-    print(f"Mean Directional Accuracy: {mean_directional_accuracy(actual, predicted)}")
