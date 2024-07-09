@@ -61,13 +61,25 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
 
     tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon)
     
+    prediction_cols = [f"t_{i}" for i in range(1, prediction_horizon + 1)]
+
+    # initializing empty lists of outputs
     results = []
+    predictions = []
+    actual = pd.DataFrame(columns=prediction_cols)
 
     metrics=["r2", "mse", "mae", "rmse", "mda"] 
 
     arima_results = pd.DataFrame(columns=metrics)
     llama_results = pd.DataFrame(columns= metrics)
     autoregressor_results = pd.DataFrame(columns=metrics)
+
+    
+    arima_preds = pd.DataFrame(columns=prediction_cols)
+    llama_preds = pd.DataFrame(columns=prediction_cols)
+    autoregressor_preds = pd.DataFrame(columns=prediction_cols)
+
+    
 
     series = data["y"]
 
@@ -97,10 +109,20 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
         arima_results = pd.concat([arima_results, pd.DataFrame([arima_metrics], columns=metrics)], ignore_index=True)
         llama_results = pd.concat([llama_results, pd.DataFrame([llama_metrics], columns=metrics)], ignore_index=True)
         autoregressor_results = pd.concat([autoregressor_results, pd.DataFrame([autoregressor_metrics], columns=metrics)], ignore_index=True)
-        
+
+        # concatinating the predictions
+        arima_preds = pd.concat([arima_preds, pd.DataFrame([autoarima_predictions], columns = prediction_cols)], ignore_index=True)
+        llama_preds = pd.concat([llama_preds, pd.DataFrame([lag_llama_predictions], columns = prediction_cols)], ignore_index=True)
+        autoregressor_preds = pd.concat([autoregressor_preds, pd.DataFrame([autoregressor_predictions], columns = prediction_cols)], ignore_index=True)
+
+        # concating the actual
+        actual = pd.concat([actual, pd.DataFrame([valid], columns = prediction_cols)], ignore_index=True)
+
         i += 1
 
     results = [arima_results, llama_results, autoregressor_results]
+    predictions = [arima_preds, llama_preds, autoregressor_preds]
+
     
-    return results
+    return results, predictions, actual
 
