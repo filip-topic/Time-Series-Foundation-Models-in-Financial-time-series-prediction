@@ -21,7 +21,7 @@ def get_stock_price_data(ticker: str, years = 1, frequency = "daily"):
     data = data.reset_index()
 
     # Rename the columns
-    data.columns = ['ds', ticker]
+    data.columns = ['ds', "y"]
 
     # Clean the data
     data = data.loc[:, ~data.iloc[0].isna()]
