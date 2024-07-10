@@ -4,13 +4,15 @@ import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import sys
 import os
+import time
+import warnings
 
 # Get the path of the MSc_dissertation directory
 base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Add the modules directory to the sys.path
 sys.path.append(base_dir)
 
-
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 from modules.models import arima, lag_llama, autoregressor
@@ -59,6 +61,8 @@ def fill_metrics(valid, predictions, last_train):
 
 def get_tscv_results(data, prediction_horizon, context_length, folds):
 
+    
+
     tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon)
     
     prediction_cols = [f"t_{i}" for i in range(1, prediction_horizon + 1)]
@@ -86,10 +90,12 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
     i = 0
 
     for train_index, test_index in tscv.split(series):
-    # subsetting the original data according to train/test split
+
+        start = time.time()
+
+        # subsetting the original data according to train/test split
         train = data.iloc[train_index]
         valid = list(data.iloc[test_index]["y"])
-
 
         # inputting data into the models
         arima_model = arima.get_autoarima(train)
@@ -119,6 +125,17 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
         actual = pd.concat([actual, pd.DataFrame([valid], columns = prediction_cols)], ignore_index=True)
 
         i += 1
+
+        end = time.time()
+        elapsed_time = end - start
+        print(f"Fold {i}/{folds} finished in: {elapsed_time:.2f} seconds")
+
+        first_valid = test_index[0]
+        last_valid = test_index[-1]
+        print(f"Prediction from   {data.iloc[first_valid]['ds']}   until   {data.iloc[last_valid]['ds']}")
+        print("----------------------")
+
+
 
     results = [arima_results, llama_results, autoregressor_results]
     predictions = [arima_preds, llama_preds, autoregressor_preds]
