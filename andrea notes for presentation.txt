@@ -1,0 +1,17 @@
+abstract -> to granular
+
+intro on dissertation topic (what, why, how)
+Business problem where TSFM can help 
+what TSFM are and why are they interesting 
+(lit review throughout this part)
+
+methodology and experiment design
+How am I goint to compare them?
+
+Initial results
+
+Timeline
+
+Next steps
+
+

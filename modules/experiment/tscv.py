@@ -59,7 +59,7 @@ def fill_metrics(valid, predictions, last_train):
     return metrics
 
 
-def get_tscv_results(data, prediction_horizon, context_length, folds):
+def get_tscv_results(data, prediction_horizon, context_length, folds, frequency):
 
     
 
@@ -100,7 +100,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds):
         # inputting data into the models
         arima_model = arima.get_autoarima(train)
         autoarima_predictions = arima.autoarima_predictions(arima_model, prediction_horizon)
-        lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length)
+        lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length, frequency=frequency)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
 
