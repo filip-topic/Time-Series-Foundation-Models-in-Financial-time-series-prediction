@@ -92,7 +92,7 @@ def prepare_data(data, prediction_length, frequency):
     # adding PREDICTION_LENGTH dummy rows
     last_date = x.index[-1]
     
-    new_dates = pd.date_range(start = last_date+pd.Timedelta(days=1), periods = prediction_length, freq = freq_map[frequency])
+    new_dates = pd.date_range(start = last_date+pd.Timedelta(days=1), periods = prediction_length, freq = freq_map[frequency]) ## im not sure this is 100% correctS
     new_rows = pd.DataFrame({'y': [1]*prediction_length}, index=new_dates)
     x = pd.concat([x, new_rows])
     x = PandasDataset(dict(x))

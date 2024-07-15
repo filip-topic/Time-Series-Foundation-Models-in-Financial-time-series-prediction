@@ -1,7 +1,7 @@
 from sklearn.model_selection import TimeSeriesSplit
 import pandas as pd
 import numpy as np
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 import sys
 import os
 import time
@@ -46,7 +46,8 @@ def get_summary(results):
     'mse': [results['mse'].mean(), results['mse'].median(), results['mse'].std()],
     'mae': [results['mae'].mean(), results['mae'].median(), results['mae'].std()],
     'rmse': [results['rmse'].mean(), results['rmse'].median(), results['rmse'].std()],
-    'mda': [results['mda'].mean(), results['mda'].median(), results['mda'].std()]
+    'mda': [results['mda'].mean(), results['mda'].median(), results['mda'].std()],
+    "mape": [results['mape'].mean(), results['mape'].median(), results['mape'].std()]
     }, index=['mean', 'median', 'std'])
     return summary
 
@@ -55,7 +56,8 @@ def fill_metrics(valid, predictions, last_train):
                mean_squared_error(valid, predictions), 
                mean_absolute_error(valid, predictions),
                np.sqrt(mean_squared_error(valid, predictions)),
-               mean_directional_accuracy(valid, predictions, last_train)]
+               mean_directional_accuracy(valid, predictions, last_train),
+               mean_absolute_percentage_error(valid, predictions)]
     return metrics
 
 
@@ -72,7 +74,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency)
     predictions = []
     actual = pd.DataFrame(columns=prediction_cols)
 
-    metrics=["r2", "mse", "mae", "rmse", "mda"] 
+    metrics=["r2", "mse", "mae", "rmse", "mda", "mape"] 
 
     arima_results = pd.DataFrame(columns=metrics)
     llama_results = pd.DataFrame(columns= metrics)
