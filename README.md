@@ -12,3 +12,5 @@ pip install mxnet -f https://dist.mxnet.io/python/cpu
 
 
 added .float() to line 553 of modules/models/llama/lag_llama/model/module.py, otherwise big ERROR
+
+changed torch.device("cuda") to torch.device("cpu") in modules\models\llama\lag_llama\gluon\estimator.py line 304

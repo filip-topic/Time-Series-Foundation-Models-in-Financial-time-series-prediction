@@ -23,7 +23,7 @@ from lag_llama.gluon.estimator import LagLlamaEstimator
 
 
 
-def get_lag_llama_predictions(dataset, prediction_length, device, context_length=32, use_rope_scaling=False, num_samples=100):
+def get_lag_llama_predictions(dataset, prediction_length, device, context_length=32, use_rope_scaling=True, num_samples=100):
     ckpt = torch.load("modules/models/llama/lag-llama.ckpt", map_location=device) # Uses GPU since in this Colab we use a GPU.    # also modified the path FILIP
     estimator_args = ckpt["hyper_parameters"]["model_kwargs"]
 
