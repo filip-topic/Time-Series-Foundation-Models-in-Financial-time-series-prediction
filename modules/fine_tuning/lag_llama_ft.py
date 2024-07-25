@@ -13,7 +13,7 @@ import pandas as pd
 
 from lag_llama.gluon.estimator import LagLlamaEstimator
 
-def get_predictor(prediction_length, context_length):
+def get_predictor(prediction_length, context_length, batch_size = 10, max_epochs = 30):
     ckpt_path = "modules/models/llama/ft-lag-llama.ckpt"
 
     import torch
@@ -46,9 +46,9 @@ def get_predictor(prediction_length, context_length):
             #     "factor": max(1.0, (context_length + prediction_length) / estimator_args["context_length"]),
             # },
 
-            batch_size=10,
+            batch_size=batch_size,
             num_parallel_samples=100,
-            trainer_kwargs = {"max_epochs": 30,}, # <- lightning trainer arguments
+            trainer_kwargs = {"max_epochs": max_epochs,}, # <- lightning trainer arguments # modified by FILIP to speed up testing
         )
     
     return estimator
@@ -65,9 +65,9 @@ def make_predictions(predictor, data, num_samples = 100):
         num_samples=num_samples
     )
 
-    forecast = list(tqdm(forecast_it, total=len(fine_tune_data), desc="Forecasting batches"))
+    forecast = list(tqdm(forecast_it, total=len(data), desc="Forecasting batches"))
 
-    return forecast[0].samples.mean(axis = 0)
+    return list(forecast[0].samples.mean(axis = 0))
 
     
 

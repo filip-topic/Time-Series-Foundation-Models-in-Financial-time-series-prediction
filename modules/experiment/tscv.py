@@ -93,12 +93,13 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
 
     metrics=["r2", "mse", "mae", "rmse", "mda", "mape"] 
 
+    #initializing empty results dataframes
     arima_results = pd.DataFrame(columns=metrics)
     llama_results = pd.DataFrame(columns= metrics)
     autoregressor_results = pd.DataFrame(columns=metrics)
     ft_llama_results = pd.DataFrame(columns=metrics)
 
-    
+    # initializing empty prediction dataframes
     arima_preds = pd.DataFrame(columns=prediction_cols)
     llama_preds = pd.DataFrame(columns=prediction_cols)
     autoregressor_preds = pd.DataFrame(columns=prediction_cols)
@@ -110,6 +111,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
 
     i = 0
 
+    # TSCV loop
     for train_index, test_index in tscv.split(series):
 
         start = time.time()
@@ -124,7 +126,6 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
         lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length, frequency=frequency)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
-        
         
 
         last_train = train["y"].iloc[-1]
@@ -151,7 +152,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
             d = lag_llama.prepare_data(train, prediction_length=prediction_horizon, frequency=frequency)
 
             # making predictions
-            ft_lag_llama_predictions = lag_llama_ft.make_evaluation_predictions(predictor = predictor, data = d)
+            ft_lag_llama_predictions = lag_llama_ft.make_predictions(predictor = predictor, data = d)
 
             # calculating metrics for this fold
             ft_llama_metrics = fill_metrics(valid, ft_lag_llama_predictions, last_train)
@@ -181,6 +182,9 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
 
     results = [arima_results, llama_results, autoregressor_results]
     predictions = [arima_preds, llama_preds, autoregressor_preds]
+    if predictor != None:
+        results.append(ft_llama_results)
+        predictions.append(ft_llama_preds)
 
     
     return results, predictions, actual

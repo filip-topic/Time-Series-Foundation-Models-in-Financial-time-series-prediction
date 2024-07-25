@@ -90,11 +90,19 @@ def interactive_visualisation(model_names, metrics, s):
     def update_graph(selected_metrics, selected_models):
         fig = go.Figure()
 
+        model_color_map = {}
+        colors = ["red", "green", "blue", "black"]
+        for i, mn in enumerate(model_names):
+            model_color_map[mn] = colors[i]
+
+        """    
         model_color_map = {
             'Arima': 'red',
             'Lag LLama': 'green',
-            'Autoregressor': 'blue'
+            'Autoregressor': 'blue',
+            "fine-tuned Llama": "black"
         }
+        """
 
         for metric in selected_metrics:
             for model in selected_models:
