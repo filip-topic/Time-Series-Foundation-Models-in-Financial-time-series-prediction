@@ -16,6 +16,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 from modules.models import arima, lag_llama, autoregressor
+from modules.fine_tuning import lag_llama_ft
 
 
 def mean_directional_accuracy(actual, predicted, last_train_point):
@@ -51,6 +52,22 @@ def get_summary(results):
     }, index=['mean', 'median', 'std'])
     return summary
 
+def extract_metrics(dataframes, models):
+    means = pd.DataFrame()
+    medians = pd.DataFrame()
+    stds = pd.DataFrame()
+    
+    for idx, df in enumerate(dataframes):
+        means = pd.concat([means, df.loc['mean'].to_frame().T], ignore_index=True)
+        medians = pd.concat([medians, df.loc['median'].to_frame().T], ignore_index=True)
+        stds = pd.concat([stds, df.loc['std'].to_frame().T], ignore_index=True)
+    
+    means.index = models
+    medians.index = models
+    stds.index = models
+    
+    return means, medians, stds
+
 def fill_metrics(valid, predictions, last_train):
     metrics = [r2_score(valid, predictions), 
                mean_squared_error(valid, predictions), 
@@ -61,7 +78,7 @@ def fill_metrics(valid, predictions, last_train):
     return metrics
 
 
-def get_tscv_results(data, prediction_horizon, context_length, folds, frequency):
+def get_tscv_results(data, prediction_horizon, context_length, folds, frequency, predictor = None):
 
     
 
@@ -79,11 +96,13 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency)
     arima_results = pd.DataFrame(columns=metrics)
     llama_results = pd.DataFrame(columns= metrics)
     autoregressor_results = pd.DataFrame(columns=metrics)
+    ft_llama_results = pd.DataFrame(columns=metrics)
 
     
     arima_preds = pd.DataFrame(columns=prediction_cols)
     llama_preds = pd.DataFrame(columns=prediction_cols)
     autoregressor_preds = pd.DataFrame(columns=prediction_cols)
+    ft_llama_preds = pd.DataFrame(columns=prediction_cols)
 
     
 
@@ -105,6 +124,8 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency)
         lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length, frequency=frequency)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
+        
+        
 
         last_train = train["y"].iloc[-1]
 
@@ -122,6 +143,25 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency)
         arima_preds = pd.concat([arima_preds, pd.DataFrame([autoarima_predictions], columns = prediction_cols)], ignore_index=True)
         llama_preds = pd.concat([llama_preds, pd.DataFrame([lag_llama_predictions], columns = prediction_cols)], ignore_index=True)
         autoregressor_preds = pd.concat([autoregressor_preds, pd.DataFrame([autoregressor_predictions], columns = prediction_cols)], ignore_index=True)
+
+        # if we want to run a fine-tuned llama
+        if predictor != None:
+
+            # preparing the data
+            d = lag_llama.prepare_data(train, prediction_length=prediction_horizon, frequency=frequency)
+
+            # making predictions
+            ft_lag_llama_predictions = lag_llama_ft.make_evaluation_predictions(predictor = predictor, data = d)
+
+            # calculating metrics for this fold
+            ft_llama_metrics = fill_metrics(valid, ft_lag_llama_predictions, last_train)
+
+            # concating the metrics for current fold to the results
+            ft_llama_results = pd.concat([ft_llama_results, pd.DataFrame([ft_llama_metrics], columns=metrics)], ignore_index=True)
+
+            # concatinating the predictions
+            ft_llama_preds = pd.concat([ft_llama_preds, pd.DataFrame([ft_lag_llama_predictions], columns = prediction_cols)], ignore_index=True)
+
 
         # concating the actual
         actual = pd.concat([actual, pd.DataFrame([valid], columns = prediction_cols)], ignore_index=True)

@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 
-def get_stock_price_data(ticker: str, years = 1, frequency = "daily"):
+def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09", end = "2024-07-09"):
     freq_map = {
         "minutely": "1m",
         "hourly": "60m",
@@ -13,8 +13,15 @@ def get_stock_price_data(ticker: str, years = 1, frequency = "daily"):
         "quarterly": "3mo"
     }
 
-    end = datetime.now()
-    start = end - timedelta(days=365 * years)
+    """
+    if start == "":
+        end = datetime.now()
+        start = end - timedelta(days=365 * years)
+    else:
+        start = datetime.strptime(start, "%Y-%m-%d")
+        end = start + timedelta(days=365 * years)
+        end = end.strftime("%Y-%m-%d")
+    """
     data = yf.download(ticker, start=start, end=end, interval=freq_map[frequency])["Close"]
 
     # Reset the index to move the date from the index to a column
@@ -124,8 +131,8 @@ def get_all_stock_returns(years=1, frequency="daily"):
     
     return returns_df
 
-def get_stock_returns(ticker, years = 1, frequency = "daily"):
-    df = get_stock_price_data(ticker=ticker, years=years, frequency=frequency)
+def get_stock_returns(ticker, frequency = "daily", start = "2023-07-09", end = "2024-07-09"):
+    df = get_stock_price_data(ticker=ticker, frequency=frequency, start = start, end = end)
 
     returns_df = df.copy()
     
