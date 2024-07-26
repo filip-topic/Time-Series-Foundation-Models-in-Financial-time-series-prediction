@@ -82,7 +82,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
 
     
 
-    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon)
+    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size=context_length)
     
     prediction_cols = [f"t_{i}" for i in range(1, prediction_horizon + 1)]
 

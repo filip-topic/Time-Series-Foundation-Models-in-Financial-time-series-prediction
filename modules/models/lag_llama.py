@@ -83,18 +83,29 @@ def prepare_data(data, prediction_length, frequency):
     #return x
 
     # filling in the gaps in the index
-    if frequency == "daily":
-        full_date_range = pd.date_range(start=x.index.min(), end=x.index.max(), freq='D')
-        x = x.reindex(full_date_range)
-    
+    #if frequency == "daily":
+    full_date_range = pd.date_range(start=x.index.min(), end=x.index.max(), freq=freq_map[frequency])
+    x = x.reindex(full_date_range)
     #return x
+    
+    
 
+
+    """
     # adding PREDICTION_LENGTH dummy rows
     last_date = x.index[-1]
     
     new_dates = pd.date_range(start = last_date+pd.Timedelta(days=1), periods = prediction_length, freq = freq_map[frequency]) ## im not sure this is 100% correctS
-    new_rows = pd.DataFrame({'y': [1]*prediction_length}, index=new_dates)
-    x = pd.concat([x, new_rows])
+    #return x
+    """
+    last_date = x.index[-1]
+    freq = freq_map[frequency]
+    new_index = pd.date_range(start=last_date, periods=prediction_length+1, freq=freq)[1:]
+    new_data = pd.DataFrame({"y": [0] * prediction_length}, index=new_index)
+    #new_dates = pd.date_range(start = last_date+pd.Timedelta(days=1), periods = prediction_length, ) ## im not sure this is 100% correctS
+    #new_rows = pd.DataFrame({'y': [1]*prediction_length}, index=new_dates)
+    x = pd.concat([x, new_data])
+    #return x
     x = PandasDataset(dict(x))
     return x
 
