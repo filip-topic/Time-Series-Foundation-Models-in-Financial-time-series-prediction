@@ -29,8 +29,16 @@ def mean_directional_accuracy(actual, predicted, last_train_point = None):
         a.append(last_train_point)
         p.append(last_train_point)
 
+
+    #print(f"actual: {a}")
+    #print("----------")
+    #print(f"predicted: {p}")
     a = pd.Series(a)
     p = pd.Series(p)
+
+    #print(f"actual: {a}")
+    #print("----------")
+    #print(f"predicted: {p}")
 
     actual_diff = a.diff().dropna()
     predicted_diff = p.diff().dropna()
@@ -141,17 +149,19 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
 
         # case when we are predicting only the next value
         if prediction_horizon == 1:
-            arima_preds.append(autoarima_predictions)
-            llama_preds.append(lag_llama_predictions)
-            autoregressor_preds.append(autoregressor_predictions)
+            arima_preds.append(autoarima_predictions[0])
+            llama_preds.append(lag_llama_predictions[0])
+            autoregressor_preds.append(autoregressor_predictions[0])
             if predictor != None:
                 d = lag_llama.prepare_data(train, prediction_length=prediction_horizon, frequency=frequency)
                 ft_lag_llama_predictions = lag_llama_ft.make_predictions(predictor = predictor, data = d)
-                ft_llama_preds.append(ft_lag_llama_predictions)
+                ft_llama_preds.append(ft_lag_llama_predictions[0])
             # actual values
-            actual.append(valid)
+            actual.append(valid[0])
 
             # verbose
+            i += 1      
+
             end = time.time()
             elapsed_time = end - start
             print(f"Fold {i}/{folds} finished in: {elapsed_time:.2f} seconds")
@@ -227,6 +237,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
         predictions["autoregressor"] = autoregressor_preds
         if predictor != None:
             predictions["ft_lag_llama"] = ft_llama_preds
+        predictions["actual"] = actual
         return results, predictions
         
     # in case prediction_horizon > 1
