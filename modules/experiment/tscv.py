@@ -19,13 +19,15 @@ from modules.models import arima, lag_llama, autoregressor
 from modules.fine_tuning import lag_llama_ft
 
 
-def mean_directional_accuracy(actual, predicted, last_train_point):
+def mean_directional_accuracy(actual, predicted, last_train_point = None):
     
     a = actual.copy()
     p = predicted.copy()
 
-    a.append(last_train_point)
-    p.append(last_train_point)
+    # in case ww supply the last train point - this is not the case when prediction_horizon == 1
+    if last_train_point != None:
+        a.append(last_train_point)
+        p.append(last_train_point)
 
     a = pd.Series(a)
     p = pd.Series(p)
@@ -68,7 +70,7 @@ def extract_metrics(dataframes, models):
     
     return means, medians, stds
 
-def fill_metrics(valid, predictions, last_train):
+def fill_metrics(valid, predictions, last_train = None):
     metrics = [r2_score(valid, predictions), 
                mean_squared_error(valid, predictions), 
                mean_absolute_error(valid, predictions),
@@ -100,10 +102,20 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
     ft_llama_results = pd.DataFrame(columns=metrics)
 
     # initializing empty prediction dataframes
-    arima_preds = pd.DataFrame(columns=prediction_cols)
-    llama_preds = pd.DataFrame(columns=prediction_cols)
-    autoregressor_preds = pd.DataFrame(columns=prediction_cols)
-    ft_llama_preds = pd.DataFrame(columns=prediction_cols)
+    # case when we predict only the next value
+    if prediction_horizon == 1:
+        arima_preds = []
+        llama_preds = []
+        autoregressor_preds = []
+        ft_llama_preds = []
+        actual = []
+    # case when we predict multiple values in future
+    else:
+        arima_preds = pd.DataFrame(columns=prediction_cols)
+        llama_preds = pd.DataFrame(columns=prediction_cols)
+        autoregressor_preds = pd.DataFrame(columns=prediction_cols)
+        ft_llama_preds = pd.DataFrame(columns=prediction_cols)
+    
 
     
 
@@ -126,6 +138,29 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
         lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length, frequency=frequency)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
+
+        # case when we are predicting only the next value
+        if prediction_horizon == 1:
+            arima_preds.append(autoarima_predictions)
+            llama_preds.append(lag_llama_predictions)
+            autoregressor_preds.append(autoregressor_predictions)
+            if predictor != None:
+                d = lag_llama.prepare_data(train, prediction_length=prediction_horizon, frequency=frequency)
+                ft_lag_llama_predictions = lag_llama_ft.make_predictions(predictor = predictor, data = d)
+                ft_llama_preds.append(ft_lag_llama_predictions)
+            # actual values
+            actual.append(valid)
+
+            # verbose
+            end = time.time()
+            elapsed_time = end - start
+            print(f"Fold {i}/{folds} finished in: {elapsed_time:.2f} seconds")
+
+            first_valid = test_index[0]
+            last_valid = test_index[-1]
+            print(f"Prediction from   {data.iloc[first_valid]['ds']}   until   {data.iloc[last_valid]['ds']}")
+            print("----------------------")
+            continue
         
 
         last_train = train["y"].iloc[-1]
@@ -178,8 +213,23 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
         print(f"Prediction from   {data.iloc[first_valid]['ds']}   until   {data.iloc[last_valid]['ds']}")
         print("----------------------")
 
-
-
+    # in case when we predict only the next value
+    if prediction_horizon == 1:
+        results = pd.DataFrame(columns=metrics)
+        results.loc["arima"] = fill_metrics(actual, arima_preds)
+        results.loc["lag_llama"] = fill_metrics(actual, llama_preds)
+        results.loc["autoregressor"] = fill_metrics(actual, autoregressor_preds)
+        if predictor != None:
+            results.loc["ft_lag_llama"] = fill_metrics(actual, ft_llama_preds)
+        predictions = pd.DataFrame()
+        predictions["arima"] = arima_preds
+        predictions["lag_llama"] = llama_preds
+        predictions["autoregressor"] = autoregressor_preds
+        if predictor != None:
+            predictions["ft_lag_llama"] = ft_llama_preds
+        return results, predictions
+        
+    # in case prediction_horizon > 1
     results = [arima_results, llama_results, autoregressor_results]
     predictions = [arima_preds, llama_preds, autoregressor_preds]
     if predictor != None:

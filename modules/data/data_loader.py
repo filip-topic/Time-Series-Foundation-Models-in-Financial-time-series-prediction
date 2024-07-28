@@ -77,7 +77,9 @@ def get_data(data_type: str, **kwargs):
     """
 
     if data_type == 'stock':
-        return get_stock_price_data(kwargs['ticker'], kwargs['start'], kwargs['end'])
+        return get_stock_price_data(ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
+    elif data_type == "return":
+        return get_stock_returns(ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
     elif data_type == 'inflation':
         return get_inflation_data(kwargs['country_code'], kwargs['start_year'], kwargs['end_year'])
     elif data_type == 'interest_rate':
