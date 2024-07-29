@@ -17,6 +17,11 @@ def save_results(prediction_length,
                 start_date,
                 end_date):
     
+    if frequency == "minutely":
+        ft_start_date = "2024-07-01"
+        start_date = "2024-07-08"
+        end_date = "2024-07-15"
+
     # data config
     data_config = {"ticker" : ticker,
                "frequency" : frequency,
@@ -34,6 +39,9 @@ def save_results(prediction_length,
 
     data_length = len(data)
     ft_length = len(ft_data)
+
+    if folds == "max":
+        folds = int((data_length - context_length) / prediction_length)
 
     # fine tuning Lag Llama - preparing the training data
     ft_train_data = lag_llama.prepare_data(data=ft_data, 
