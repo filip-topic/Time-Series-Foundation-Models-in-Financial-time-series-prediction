@@ -100,6 +100,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
     results = []
     predictions = []
     actual = pd.DataFrame(columns=prediction_cols)
+    timestamps = pd.DataFrame(columns=prediction_cols)
 
     metrics=["r2", "mse", "mae", "rmse", "mda", "mape"] 
 
@@ -117,6 +118,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
         autoregressor_preds = []
         ft_llama_preds = []
         actual = []
+        timestamps = []
     # case when we predict multiple values in future
     else:
         arima_preds = pd.DataFrame(columns=prediction_cols)
@@ -139,6 +141,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
         # subsetting the original data according to train/test split
         train = data.iloc[train_index]
         valid = list(data.iloc[test_index]["y"])
+        timestamp = list(data.iloc[test_index]["ds"])
 
         # inputting data into the models
         arima_model = arima.get_autoarima(train)
@@ -158,6 +161,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
                 ft_llama_preds.append(ft_lag_llama_predictions[0])
             # actual values
             actual.append(valid[0])
+            timestamps.append(timestamp[0])
 
             # verbose
             i += 1      
@@ -211,6 +215,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
 
         # concating the actual
         actual = pd.concat([actual, pd.DataFrame([valid], columns = prediction_cols)], ignore_index=True)
+        timestamps = pd.concat([timestamps, pd.DataFrame([timestamp], columns = prediction_cols)], ignore_index=True)
 
         i += 1
 
@@ -235,6 +240,7 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
         predictions["arima"] = arima_preds
         predictions["lag_llama"] = llama_preds
         predictions["autoregressor"] = autoregressor_preds
+        predictions["timestamp"] = timestamps
         if predictor != None:
             predictions["ft_lag_llama"] = ft_llama_preds
         predictions["actual"] = actual
