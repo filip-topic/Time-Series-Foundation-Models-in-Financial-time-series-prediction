@@ -13,7 +13,7 @@ import itertools
 # parameters
 PREDICTION_LENGTH = [1] #fixed
 TICKER = ["AAPL"] # fixed
-FREQUENCY = ["minutely", "hourly", "daily"] 
+FREQUENCY = ["hourly", "daily"] # minutely is out because it already ran
 TYPE_OF_DATA = ["stock", "return"] 
 MODELS = ["arima", "llama", "autoregressor", "fine-tuned Llama"] # fixed non-argument
 FOLDS = [10] # fixed

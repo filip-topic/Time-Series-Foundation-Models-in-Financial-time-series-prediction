@@ -22,6 +22,11 @@ def save_results(prediction_length,
         start_date = "2024-07-08"
         end_date = "2024-07-15"
 
+    if frequency == "hourly":
+        ft_start_date = "2023-01-01"
+        start_date = "2023-06-01"
+        end_date = "2024-01-01"
+
     # data config
     data_config = {"ticker" : ticker,
                "frequency" : frequency,
