@@ -13,19 +13,19 @@ import itertools
 # parameters
 PREDICTION_LENGTH = [1] #fixed
 TICKER = ["AAPL"] # fixed
-FREQUENCY = ["minutely", "hourly", "daily"] 
-TYPE_OF_DATA = ["stock", "return"] 
+FREQUENCY = ["minutely"] 
+TYPE_OF_DATA = ["stock"] 
 MODELS = ["arima", "llama", "autoregressor", "fine-tuned Llama"] # fixed non-argument
-FOLDS = [100] # fixed
-CONTEXT_LENGTH = [32, 64, 128]
+FOLDS = [20] # fixed
+CONTEXT_LENGTH = [32]
 METRICS = ['r2', 'mse', 'mae', 'rmse', 'mda', "mape"] # fixed non-argument
 
 # fine-tuning parameters
-BATCH_SIZE = [10] # fixed
-MAX_EPOCHS = [10] # fixed
+BATCH_SIZE = [30] # fixed
+MAX_EPOCHS = [5] # fixed
 
 # data parameters
-FT_START_DATE = ["2022-07-07"] # fixed
+FT_LENGTH = [100]
 START_DATE = ["2023-07-07"] # fixed
 END_DATE = ["2024-07-07"] # fixed
 
@@ -39,7 +39,7 @@ parameters = [
     CONTEXT_LENGTH,
     BATCH_SIZE,
     MAX_EPOCHS,
-    FT_START_DATE,
+    FT_LENGTH,
     START_DATE,
     END_DATE
 ]
@@ -58,7 +58,7 @@ for combination in all_combinations:
         context_length=combination[5],
         batch_size=combination[6],
         max_epochs=combination[7],
-        ft_start_date=combination[8],
+        ft_length=combination[8],
         start_date=combination[9],
         end_date=combination[10]
     )
