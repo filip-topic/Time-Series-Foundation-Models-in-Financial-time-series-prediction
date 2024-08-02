@@ -20,7 +20,7 @@ def save_results(prediction_length,
     if frequency == "minutely":
         ft_start_date = "2024-07-07"
         start_date = "2024-07-22"
-        end_date = "2024-07-24"
+        end_date = "2024-07-27"
 
     if frequency == "hourly":
         ft_start_date = "2023-04-01"

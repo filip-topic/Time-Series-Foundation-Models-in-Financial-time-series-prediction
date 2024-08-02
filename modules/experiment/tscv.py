@@ -256,6 +256,10 @@ def get_tscv_results(data, prediction_horizon, context_length, folds, frequency,
 
 
 
+# at each step print dataframe and compare
+# look at dates, training set
+# print df fold 1 and df fold 2 and see whats the differences
+# add logging
 
 
 
@@ -273,7 +277,7 @@ def get_tscv_results(data,
                      fine_tune_length, 
                      batch_size,
                      max_epochs,  
-                     fine_tune_frequency = 5):
+                     fine_tune_frequency = 30):
 
     # initializing empty lists of outputs
     results = []
@@ -282,15 +286,26 @@ def get_tscv_results(data,
     #declaring the metrics
     metrics=["r2", "mse", "mae", "rmse", "mda", "mape"] 
 
+    
+
+    ################################### initial lag-llama finetuning ##################################
     # declaring ft_data
-    ft_data = data.iloc[0:fine_tune_length + fine_tune_frequency]
+    """ft_data = data.iloc[0:fine_tune_length + fine_tune_frequency]
     data = data.iloc[fine_tune_length + fine_tune_frequency:]
 
-    # initializing the lag_llama predictor
     predictor = lag_llama_ft.get_predictor(prediction_length=1, 
                                        context_length=context_length, 
                                        batch_size=batch_size, 
                                        max_epochs=max_epochs)
+    
+    ft_train_data = lag_llama.prepare_data(data=ft_data, 
+                                       prediction_length=0, 
+                                       frequency=frequency)
+    
+    predictor = predictor.train(ft_train_data, 
+                            cache_data = True, 
+                            shuffle_buffer_length = 1000)"""
+    ####################################################################################################
     
 
     # initializing empty prediction dataframes
@@ -302,7 +317,7 @@ def get_tscv_results(data,
     timestamps = []
 
     # TSCV iterable object
-    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size=context_length)
+    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size=context_length + fine_tune_length)
     series = data["y"]
     i=0
 
@@ -310,6 +325,9 @@ def get_tscv_results(data,
     for train_index, test_index in tscv.split(series):
 
         start = time.time()
+
+        ft_index = train_index[:fine_tune_length]
+        train_index = train_index[fine_tune_length:]
 
         # subsetting the original data according to train/test split
         train = data.iloc[train_index]
@@ -322,13 +340,40 @@ def get_tscv_results(data,
         lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length, frequency=frequency)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
-        ######################### fine-tuning lag-llama and getting predictions ###############################
 
-        if i % fine_tune_frequency == 0:
+        ######################### fine-tuning lag-llama and getting predictions ##############################
 
-            # preparing the data for fine-tuning
-            ft_data = ft_data[fine_tune_frequency:]
-            ft_data = pd.concat([ft_data, data.iloc[train_index].tail(fine_tune_frequency)])
+        if (i % fine_tune_frequency == 0) & (fine_tune_frequency < folds):
+            print("ENTERED THE IF STATEMENT")
+            print("TRAIN INDEX")
+            print(train_index)
+            print("FT INDEX")
+            print(ft_index)
+
+            # removing the first fine_tune_frequency rows to keep fine_tune length consistant
+            ft_data = data.iloc[ft_index]
+            # adding the fine_tune_frequency number of rows before the train index
+
+            ######################testing####################
+            #print("TRAIN INDEX:")
+            #print(train_index)
+            ##########################################
+
+            #ft_data = pd.concat([ft_data, data.iloc[train_index[0] - fine_tune_frequency: train_index[0]]])
+
+            ############## testing #############
+            # do with min and max
+            """
+            print("FT_DATA timestamps")
+            for index, row in ft_data.iterrows(): 
+                print(row["ds"])
+
+            print("TRAIN DATA TIMESTAMPS")
+            for index, row in train.iterrows():
+                print(row["ds"])
+            """
+            #################################
+
             ft_train_data = lag_llama.prepare_data(data=ft_data, 
                                        prediction_length=0, 
                                        frequency=frequency)
@@ -341,10 +386,10 @@ def get_tscv_results(data,
             predictor = predictor.train(ft_train_data, 
                             cache_data = True, 
                             shuffle_buffer_length = 1000)
-            
+        ##########################################################################################
+
         d = lag_llama.prepare_data(train, prediction_length=prediction_horizon, frequency=frequency)
         ft_lag_llama_predictions = lag_llama_ft.make_predictions(predictor = predictor, data = d)
-        ##########################################################################################
 
         #appending the predictions to the preds lists
         arima_preds.append(autoarima_predictions[0])

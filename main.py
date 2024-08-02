@@ -14,15 +14,15 @@ import itertools
 PREDICTION_LENGTH = [1] #fixed
 TICKER = ["AAPL"] # fixed
 FREQUENCY = ["minutely"] 
-TYPE_OF_DATA = ["stock"] 
+TYPE_OF_DATA = ["return"] 
 MODELS = ["arima", "llama", "autoregressor", "fine-tuned Llama"] # fixed non-argument
 FOLDS = [20] # fixed
-CONTEXT_LENGTH = [32]
+CONTEXT_LENGTH = [64]
 METRICS = ['r2', 'mse', 'mae', 'rmse', 'mda', "mape"] # fixed non-argument
 
 # fine-tuning parameters
-BATCH_SIZE = [30] # fixed
-MAX_EPOCHS = [5] # fixed
+BATCH_SIZE = [5] # fixed
+MAX_EPOCHS = [4] # fixed
 
 # data parameters
 FT_LENGTH = [100]
