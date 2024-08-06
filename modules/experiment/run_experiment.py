@@ -18,12 +18,11 @@ def save_results(prediction_length,
                 end_date):
     
     if frequency == "minutely":
-        ft_start_date = "2024-07-07"
         start_date = "2024-07-22"
         end_date = "2024-07-27"
 
     if frequency == "hourly":
-        ft_start_date = "2023-04-01"
+
         start_date = "2023-06-01"
         end_date = "2024-01-01"
 
@@ -33,10 +32,11 @@ def save_results(prediction_length,
                "start" : start_date,
                "end" : end_date}
 
-    ft_data_config = {"ticker" : ticker,
+
+    """ft_data_config = {"ticker" : ticker,
                      "frequency" : frequency,
                      "start" : ft_start_date,
-                     "end" : start_date}
+                     "end" : start_date}"""
     
     # loading the data
     data = data_loader.get_data(data_type=type_of_data, kwargs=data_config)
@@ -45,8 +45,8 @@ def save_results(prediction_length,
     data_length = len(data)
     #ft_length = len(ft_data)
 
-    if folds == "max":
-        folds = int((data_length - context_length) / prediction_length)
+    """if folds == "max":
+        folds = int((data_length - context_length) / prediction_length)"""
 
     """
     # fine tuning Lag Llama - preparing the training data
@@ -78,7 +78,7 @@ def save_results(prediction_length,
                            fine_tune_frequency=5)
     
     # experiment name
-    experiment_name = f"P_L={prediction_length}__T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__FT_S_D={ft_start_date}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__D_L={data_length}.csv"
+    experiment_name = f"P_L={prediction_length}__T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__D_L={data_length}.csv"
 
     # saving the results
     result_saver.save_results(r, experiment_name, type="evaluation")

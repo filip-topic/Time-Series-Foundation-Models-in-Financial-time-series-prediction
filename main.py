@@ -1,3 +1,5 @@
+
+
 # modules
 from modules.data import  data_reader, data_loader
 from modules.sr import result_saver
@@ -12,7 +14,7 @@ import itertools
 
 # parameters
 PREDICTION_LENGTH = [1] #fixed
-TICKER = ["AAPL"] # fixed
+TICKER = ["S&P 500"] # fixed
 FREQUENCY = ["minutely"] 
 TYPE_OF_DATA = ["return"] 
 MODELS = ["arima", "llama", "autoregressor", "fine-tuned Llama"] # fixed non-argument

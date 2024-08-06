@@ -22,6 +22,49 @@ def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09",
         end = start + timedelta(days=365 * years)
         end = end.strftime("%Y-%m-%d")
     """
+    ################## for index data ###################################
+    indices = {
+    'S&P 500': '^GSPC',
+    'FTSE 100': '^FTSE',
+    'NASDAQ Composite': '^IXIC',
+    'Dow Jones Industrial Average': '^DJI',
+    'Russell 2000': '^RUT',
+    'CAC 40': '^FCHI',
+    'DAX': '^GDAXI',
+    'Nikkei 225': '^N225',
+    'Hang Seng': '^HSI',
+    'Shanghai Composite': '000001.SS',
+    'S&P/ASX 200': '^AXJO',
+    'BSE Sensex': '^BSESN',
+    'Nifty 50': '^NSEI',
+    'KOSPI': '^KS11',
+    'Taiwan Weighted': '^TWII',
+    'S&P/TSX Composite': '^GSPTSE',
+    'Swiss Market Index': '^SSMI',
+    'Euro Stoxx 50': '^STOXX50E',
+    'FTSE MIB': 'FTSEMIB.MI',
+    'IBEX 35': '^IBEX',
+    'AEX': '^AEX',
+    'OMX Stockholm 30': '^OMX',
+    'OSEAX': '^OSEAX',
+    'Bovespa': '^BVSP',
+    'IPC Mexico': '^MXX',
+    'MERVAL': '^MERV',
+    'Santiago IPSA': '^IPSA',
+    'Colcap': '^COLCAP',
+    'SP 500 BRL': 'SPBRBRL',
+    'BSE Smallcap': '^BSESN',
+    'BSE Midcap': '^BSEMID',
+    'IBOVESPA': '^BVSP',
+    'JSE Top 40': 'J200.JO',
+    'MSCI World Index': '^MSCI'
+    }
+
+    if ticker in indices.keys():
+        ticker = indices[ticker]
+    ####################################################################
+    print(ticker)
+
     data = yf.download(ticker, start=start, end=end, interval=freq_map[frequency])["Close"]
 
     # Reset the index to move the date from the index to a column
@@ -34,6 +77,9 @@ def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09",
     data = data.loc[:, ~data.iloc[0].isna()]
     data = data.dropna(axis=1, how='all')
     data = data.fillna(method='ffill')
+
+    if frequency in ["hourly", "minutely"]:
+        data["ds"] = data['ds'].dt.tz_localize(None)
 
     return data
 
