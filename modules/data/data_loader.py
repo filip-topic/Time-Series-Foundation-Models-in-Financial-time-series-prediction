@@ -99,7 +99,96 @@ def get_interest_rate_data(series_id: str, start: str, end: str, api_key: str):
     interest_rate_data = pd.json_normalize(data['observations'])
     return interest_rate_data[['date', 'value']].rename(columns={'date': 'Date', 'value': 'Interest Rate'})
 
-#def get_exchange_rate_data(ticker, start, end):
+def get_alphavantage_data(data_type, ticker, frequency, start, end):
+    api_key = os.getenv("ALPHAVANTAGE_API")  # Replace with your actual API key
+
+    # Map the frequency to Alpha Vantage intervals
+    interval_mapping = {
+        'minutely': '1min',
+        'hourly': '60min',
+        'daily': 'daily',
+        'weekly': 'weekly'
+    }
+
+    interval = interval_mapping.get(frequency.lower())
+    if not interval:
+        raise ValueError("Invalid frequency. Use 'minutely', 'hourly', 'daily', or 'weekly'.")
+
+    base_url = 'https://www.alphavantage.co/query'
+    params = {'apikey': api_key, 'outputsize': 'full'}
+
+    if data_type == 'crypto':
+        function = 'CRYPTO_INTRADAY' if frequency in ['minutely', 'hourly'] else 'DIGITAL_CURRENCY_DAILY'
+        params.update({
+            'function': function,
+            'symbol': ticker.split('/')[0],
+            'market': ticker.split('/')[1],
+            'interval': interval if frequency in ['minutely', 'hourly'] else None
+        })
+    elif data_type == 'commodities':
+        function = 'TIME_SERIES_INTRADAY' if frequency in ['minutely', 'hourly'] else 'TIME_SERIES_DAILY'
+        params.update({
+            'function': function,
+            'symbol': ticker,
+            'interval': interval if frequency in ['minutely', 'hourly'] else None
+        })
+    elif data_type == 'exchange_rate':
+        if frequency in ['minutely', 'hourly']:
+            function = 'FX_INTRADAY'
+            params.update({
+                'function': function,
+                'from_symbol': ticker.split('/')[0],
+                'to_symbol': ticker.split('/')[1],
+                'interval': interval
+            })
+        elif frequency == 'daily':
+            function = 'FX_DAILY'
+            params.update({
+                'function': function,
+                'from_symbol': ticker.split('/')[0],
+                'to_symbol': ticker.split('/')[1]
+            })
+        elif frequency == 'weekly':
+            function = 'FX_WEEKLY'
+            params.update({
+                'function': function,
+                'from_symbol': ticker.split('/')[0],
+                'to_symbol': ticker.split('/')[1]
+            })
+    else:
+        raise ValueError("Invalid data type. Use 'crypto', 'commodities', or 'exchange_rate'.")
+
+    response = requests.get(base_url, params=params)
+    data = response.json()
+
+    if 'Error Message' in data:
+        raise ValueError("Error fetching data: " + data['Error Message'])
+    if 'Note' in data:
+        raise ValueError("Error fetching data: " + data['Note'])
+
+    if data_type == 'crypto' and frequency not in ['minutely', 'hourly']:
+        timeseries_key = 'Time Series (Digital Currency Daily)'
+    else:
+        timeseries_key = [key for key in data.keys() if 'Time Series' in key][0]
+
+    timeseries_data = data.get(timeseries_key, {})
+
+    df = pd.DataFrame.from_dict(timeseries_data, orient='index')
+    df.index = pd.to_datetime(df.index)
+    if data_type == 'crypto' and frequency not in ['minutely', 'hourly']:
+        df.columns = ['Open', 'Open (USD)', 'High', 'High (USD)', 'Low', 'Low (USD)', 'Close', 'Close (USD)', 'Volume', 'Market Cap (USD)']
+        df = df[['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap (USD)']]
+    else:
+        df.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
+    df = df.astype(float)
+
+    df = df[(df.index >= start) & (df.index <= end)]
+
+    df = df.reset_index()
+    df = df[["index", "Close"]]
+    df.columns = ["ds", "y"]
+
+    return df
 
 
 def get_data(data_type: str, **kwargs):
@@ -108,14 +197,14 @@ def get_data(data_type: str, **kwargs):
         return get_stock_price_data(ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
     elif data_type == "return":
         return get_stock_returns(ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
-    elif data_type == "exchange_rate":
-        return None
+    elif data_type in ["exchange_rate", "commodities", "crypto"]:
+        return get_alphavantage_data(data_type=data_type, ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
     elif data_type == 'inflation':
         return get_inflation_data(kwargs['country_code'], kwargs['start_year'], kwargs['end_year'])
     elif data_type == 'interest_rate':
         return get_interest_rate_data(kwargs['series_id'], kwargs['start'], kwargs['end'], kwargs['api_key'])
     else:
-        raise ValueError("Invalid data_type. Expected 'stock', 'inflation', or 'interest_rate'.")
+        raise ValueError("Invalid data_type")
     
 def get_all_stock_data(years=1, frequency="daily"):
     end_date = datetime.now()
