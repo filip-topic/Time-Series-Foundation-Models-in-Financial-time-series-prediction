@@ -15,7 +15,7 @@ sys.path.append(base_dir)
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-from modules.models import arima, lag_llama, autoregressor
+from modules.models import arima, lag_llama, autoregressor, prophet
 from modules.fine_tuning import lag_llama_ft
 
 
@@ -313,6 +313,7 @@ def get_tscv_results(data,
     llama_preds = []
     autoregressor_preds = []
     ft_llama_preds = []
+    prophet_preds = []
     actual = []
     timestamps = []
 
@@ -340,6 +341,7 @@ def get_tscv_results(data,
         lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length, frequency=frequency)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
+        prophet_predictions = prophet.get_prophet_predictions(train, prediction_horizon)
 
         ######################### fine-tuning lag-llama and getting predictions ##############################
 
@@ -396,6 +398,7 @@ def get_tscv_results(data,
         llama_preds.append(lag_llama_predictions[0])
         autoregressor_preds.append(autoregressor_predictions[0])
         ft_llama_preds.append(ft_lag_llama_predictions[0])
+        prophet_preds.append(prophet_preds[0])
         # appending the actual values amnd timestamp
         # actual values
         actual.append(valid[0])
@@ -417,6 +420,7 @@ def get_tscv_results(data,
     results.loc["lag_llama"] = fill_metrics(actual, llama_preds)
     results.loc["autoregressor"] = fill_metrics(actual, autoregressor_preds)
     results.loc["ft_lag_llama"] = fill_metrics(actual, ft_llama_preds)
+    results.loc["prophet"] = fill_metrics(actual, prophet_preds)
 
     # filling in the predictions
     predictions = pd.DataFrame()
@@ -425,6 +429,7 @@ def get_tscv_results(data,
     predictions["autoregressor"] = autoregressor_preds
     predictions["timestamp"] = timestamps
     predictions["ft_lag_llama"] = ft_llama_preds
+    predictions["prophet"] = prophet_preds
     predictions["actual"] = actual
     
     # return statement
