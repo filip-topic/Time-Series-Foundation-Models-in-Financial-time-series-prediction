@@ -2,6 +2,9 @@ import yfinance as yf
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
+import os
+
+alphavantage_api_key = 1234
 
 def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09", end = "2024-07-09"):
     freq_map = {
@@ -63,7 +66,6 @@ def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09",
     if ticker in indices.keys():
         ticker = indices[ticker]
     ####################################################################
-    print(ticker)
 
     data = yf.download(ticker, start=start, end=end, interval=freq_map[frequency])["Close"]
 
@@ -74,9 +76,9 @@ def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09",
     data.columns = ['ds', "y"]
 
     # Clean the data
-    data = data.loc[:, ~data.iloc[0].isna()]
+    """data = data.loc[:, ~data.iloc[0].isna()]
     data = data.dropna(axis=1, how='all')
-    data = data.fillna(method='ffill')
+    data = data.fillna(method='ffill')"""
 
     if frequency in ["hourly", "minutely"]:
         data["ds"] = data['ds'].dt.tz_localize(None)
@@ -97,35 +99,17 @@ def get_interest_rate_data(series_id: str, start: str, end: str, api_key: str):
     interest_rate_data = pd.json_normalize(data['observations'])
     return interest_rate_data[['date', 'value']].rename(columns={'date': 'Date', 'value': 'Interest Rate'})
 
+#def get_exchange_rate_data(ticker, start, end):
+
+
 def get_data(data_type: str, **kwargs):
-    """
-    Download data about stock prices, inflation, or interest rates.
-
-    Parameters:
-    data_type (str): Type of data to download ('stock', 'inflation', 'interest_rate').
-    kwargs: Additional keyword arguments specific to the data type.
-        For 'stock':
-            - ticker (str): The ticker symbol of the company (e.g., 'AAPL' for Apple).
-            - start (str): The start date in the format 'YYYY-MM-DD'.
-            - end (str): The end date in the format 'YYYY-MM-DD'.
-        For 'inflation':
-            - country_code (str): The ISO 3166-1 alpha-3 country code (e.g., 'USA' for the United States).
-            - start_year (int): The start year (e.g., 2000).
-            - end_year (int): The end year (e.g., 2020).
-        For 'interest_rate':
-            - series_id (str): The series ID for the interest rate data (e.g., 'FEDFUNDS' for the Federal Funds Rate).
-            - start (str): The start date in the format 'YYYY-MM-DD'.
-            - end (str): The end date in the format 'YYYY-MM-DD'.
-            - api_key (str): Your FRED API key.
-
-    Returns:
-    DataFrame: A pandas DataFrame containing the requested data.
-    """
 
     if data_type == 'stock':
         return get_stock_price_data(ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
     elif data_type == "return":
         return get_stock_returns(ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
+    elif data_type == "exchange_rate":
+        return None
     elif data_type == 'inflation':
         return get_inflation_data(kwargs['country_code'], kwargs['start_year'], kwargs['end_year'])
     elif data_type == 'interest_rate':

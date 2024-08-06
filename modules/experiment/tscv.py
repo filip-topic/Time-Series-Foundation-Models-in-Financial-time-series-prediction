@@ -346,11 +346,12 @@ def get_tscv_results(data,
         ######################### fine-tuning lag-llama and getting predictions ##############################
 
         if (i % fine_tune_frequency == 0) & (fine_tune_frequency < folds):
-            print("ENTERED THE IF STATEMENT")
+
+            """print("ENTERED THE IF STATEMENT")
             print("TRAIN INDEX")
             print(train_index)
             print("FT INDEX")
-            print(ft_index)
+            print(ft_index)"""
 
             # removing the first fine_tune_frequency rows to keep fine_tune length consistant
             ft_data = data.iloc[ft_index]
@@ -398,7 +399,7 @@ def get_tscv_results(data,
         llama_preds.append(lag_llama_predictions[0])
         autoregressor_preds.append(autoregressor_predictions[0])
         ft_llama_preds.append(ft_lag_llama_predictions[0])
-        prophet_preds.append(prophet_preds[0])
+        prophet_preds.append(prophet_predictions[0])
         # appending the actual values amnd timestamp
         # actual values
         actual.append(valid[0])
