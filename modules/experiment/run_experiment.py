@@ -45,8 +45,8 @@ def save_results(prediction_length,
     data_length = len(data)
     #ft_length = len(ft_data)
 
-    """if folds == "max":
-        folds = int((data_length - context_length) / prediction_length)"""
+    if folds == "max":
+        folds = int((data_length - ft_length) / prediction_length)
 
     """
     # fine tuning Lag Llama - preparing the training data

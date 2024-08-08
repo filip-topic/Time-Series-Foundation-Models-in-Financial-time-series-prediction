@@ -277,7 +277,8 @@ def get_tscv_results(data,
                      fine_tune_length, 
                      batch_size,
                      max_epochs,  
-                     fine_tune_frequency = 30):
+                     fine_tune_frequency = 30,
+                     tscv_repeats = 1):
 
     # initializing empty lists of outputs
     results = []
@@ -318,7 +319,7 @@ def get_tscv_results(data,
     timestamps = []
 
     # TSCV iterable object
-    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size=context_length + fine_tune_length)
+    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size=fine_tune_length)
     series = data["y"]
     i=0
 
@@ -327,8 +328,8 @@ def get_tscv_results(data,
 
         start = time.time()
 
-        ft_index = train_index[:fine_tune_length]
-        train_index = train_index[fine_tune_length:]
+        ft_index = train_index.copy()
+        train_index = train_index[-1*context_length:]
 
         # subsetting the original data according to train/test split
         train = data.iloc[train_index]

@@ -19,7 +19,7 @@ FREQUENCY = ["minutely"]
 TYPE_OF_DATA = ["return"] 
 MODELS = ["arima", "llama", "autoregressor", "fine-tuned Llama"] # fixed non-argument
 FOLDS = [20] # fixed
-CONTEXT_LENGTH = [64]
+CONTEXT_LENGTH = [32, 64, 128]
 METRICS = ['r2', 'mse', 'mae', 'rmse', 'mda', "mape"] # fixed non-argument
 
 # fine-tuning parameters
