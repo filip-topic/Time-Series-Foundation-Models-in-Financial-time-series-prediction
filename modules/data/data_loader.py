@@ -4,12 +4,116 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 
-alphavantage_api_key = os.environ["ALPHAVANTAGE_API"]
 
 
 def get_data(**kwargs):
+
+    api_key = os.getenv("ALPHAVANTAGE_API")
+
+    data_type = kwargs["type"]
+    frequency = kwargs["frequency"]
+    symbol = kwargs["ticker"]
+    start_date = kwargs["start"]
+    end_date = kwargs["end"]
+
+    interval_mapping = {
+        'minutely': '1min',
+        'hourly': '60min',
+        'daily': 'daily',
+        'weekly': 'weekly',
+        'monthly': 'monthly'
+    }
+
+    base_url = 'https://www.alphavantage.co/query'
+    params = {'apikey': api_key, 'outputsize': 'full'}
+
+    function_map = {
+        'stock': {
+            'minutely': 'TIME_SERIES_INTRADAY',
+            'hourly': 'TIME_SERIES_INTRADAY',
+            'daily': 'TIME_SERIES_DAILY',
+            'weekly': 'TIME_SERIES_WEEKLY',
+            'monthly': 'TIME_SERIES_MONTHLY'
+        },
+        'index': {
+            'minutely': 'TIME_SERIES_INTRADAY',
+            'hourly': 'TIME_SERIES_INTRADAY',
+            'daily': 'TIME_SERIES_DAILY',
+            'weekly': 'TIME_SERIES_WEEKLY',
+            'monthly': 'TIME_SERIES_MONTHLY'
+        },
+        'exchange_rate': {
+            'minutely': 'FX_INTRADAY',
+            'hourly': 'FX_INTRADAY',
+            'daily': 'FX_DAILY',
+            'weekly': 'FX_WEEKLY',
+            'monthly': 'FX_MONTHLY'
+        },
+        'crypto': {
+            'minutely': 'CRYPTO_INTRADAY',
+            'hourly': 'CRYPTO_INTRADAY',
+            'daily': 'DIGITAL_CURRENCY_DAILY',
+            'weekly': 'DIGITAL_CURRENCY_WEEKLY',
+            'monthly': 'DIGITAL_CURRENCY_MONTHLY'
+        }
+    }
+
+    # this is for all calls of this function
+    if data_type != "commodity":
+        params["function"] = function_map[data_type][frequency]
+    # unless we request commodities
+    else:
+        params["function"] = symbol
+
+    # this is for calls that request intraday frequencies
+    if frequency in ['minutely', 'hourly']:
+        params['interval'] = '1min' if frequency == 'minutely' else '60min'
+
+    # this is for calls that request stock or index prices - it specifies which stock or index to retreive 
+    if data_type in ["stock", "index"]:
+        params["adjusted"] = "false"
+        params["symbol"] = symbol
+
+    # this is for calls that request exchange rates. it denotes which exchange rate to get
+    if data_type == 'exchange_rate':
+        params['from_symbol'] = symbol.split('/')[0]
+        params['to_symbol'] = symbol.split('/')[1]
+
+    if data_type == 'crypto':
+        params['market'] = 'USD'
+        params["symbol"] = symbol
+
+        
+
+    #url = base_url + f"?function={params["function"]}&symbol={params["sy"]}"
+    response = requests.get(base_url, params=params)
+    #return response.json() # for testing purposes
+    data = response.json()
+
+    time_series_key = next((key for key in data if 'Time Series' in key or 'FX' in key or 'Time Series' in key), None)
+    if time_series_key is None:
+        raise ValueError("Could not find the time series data in the response.")
     
-    return None
+    time_series = data[time_series_key]
+    
+    # Convert the data to a pandas DataFrame
+    df = pd.DataFrame.from_dict(time_series, orient='index')
+    
+    # Ensure that we have 'close' price column
+    close_column = '4. close' if '4. close' in df.columns else 'Close'
+    
+    # Convert the index to datetime and filter by start and end date
+    df.index = pd.to_datetime(df.index)
+    df = df[(df.index >= start_date) & (df.index <= end_date)]
+    
+    # Keep only the close price column
+    df = df[[close_column]].rename(columns={close_column: 'Close'})
+
+    df = df.reset_index()
+    df.columns = ["ds", "y"]
+    
+    return df
+
 
 
 
