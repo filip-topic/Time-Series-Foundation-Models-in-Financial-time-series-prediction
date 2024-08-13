@@ -278,35 +278,15 @@ def get_tscv_results(data,
                      batch_size,
                      max_epochs,  
                      fine_tune_frequency = 30,
-                     tscv_repeats = 1):
+                     tscv_repeats = 1,
+                     ft_gap = 0):
 
     # initializing empty lists of outputs
     results = []
     predictions = []
 
     #declaring the metrics
-    metrics=["r2", "mse", "mae", "rmse", "mda", "mape"] 
-
-    
-
-    ################################### initial lag-llama finetuning ##################################
-    # declaring ft_data
-    """ft_data = data.iloc[0:fine_tune_length + fine_tune_frequency]
-    data = data.iloc[fine_tune_length + fine_tune_frequency:]
-
-    predictor = lag_llama_ft.get_predictor(prediction_length=1, 
-                                       context_length=context_length, 
-                                       batch_size=batch_size, 
-                                       max_epochs=max_epochs)
-    
-    ft_train_data = lag_llama.prepare_data(data=ft_data, 
-                                       prediction_length=0, 
-                                       frequency=frequency)
-    
-    predictor = predictor.train(ft_train_data, 
-                            cache_data = True, 
-                            shuffle_buffer_length = 1000)"""
-    ####################################################################################################
+    metrics=["r2", "mse", "mae", "rmse", "mda", "mape"]
     
 
     # initializing empty prediction dataframes
@@ -319,7 +299,7 @@ def get_tscv_results(data,
     timestamps = []
 
     # TSCV iterable object
-    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size=fine_tune_length)
+    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size = fine_tune_length + ft_gap)
     series = data["y"]
     i=0
 
@@ -328,7 +308,7 @@ def get_tscv_results(data,
 
         start = time.time()
 
-        ft_index = train_index.copy()
+        ft_index = train_index[:fine_tune_length]
         train_index = train_index[-1*context_length:]
 
         # subsetting the original data according to train/test split

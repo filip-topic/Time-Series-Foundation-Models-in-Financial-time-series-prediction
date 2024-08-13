@@ -4,9 +4,18 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 
-alphavantage_api_key = 1234
+alphavantage_api_key = os.environ["ALPHAVANTAGE_API"]
 
-def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09", end = "2024-07-09"):
+
+def get_data(**kwargs):
+    
+    return None
+
+
+
+
+
+'''def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09", end = "2024-07-09"):
     freq_map = {
         "minutely": "1m",
         "hourly": "60m",
@@ -98,6 +107,13 @@ def get_interest_rate_data(series_id: str, start: str, end: str, api_key: str):
     data = response.json()
     interest_rate_data = pd.json_normalize(data['observations'])
     return interest_rate_data[['date', 'value']].rename(columns={'date': 'Date', 'value': 'Interest Rate'})
+
+def get_credit_card_data(frequency="daily", purpose = "Aggregate", sa=""):
+    project_folder = os.getcwd()
+    file_path = os.path.abspath(os.path.join(project_folder, "data", "credit_card", f"uk_credit_card_data_{frequency}{sa}.xlsx"))
+    df = pd.read_excel(file_path, usecols=["Date", purpose])
+    df.columns = ["ds", "y"]
+    return df
 
 def get_alphavantage_data(data_type, ticker, frequency, start, end):
     api_key = os.getenv("ALPHAVANTAGE_API")  # Replace with your actual API key
@@ -199,6 +215,8 @@ def get_data(data_type: str, **kwargs):
         return get_stock_returns(ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
     elif data_type in ["exchange_rate", "commodities", "crypto"]:
         return get_alphavantage_data(data_type=data_type, ticker=kwargs["kwargs"]["ticker"], frequency=kwargs["kwargs"]["frequency"], start=kwargs["kwargs"]["start"], end=kwargs["kwargs"]["end"])
+    elif data_type == "credit_card":
+        return get_credit_card_data(frequency=kwargs["kwargs"]["frequency"], purpose = kwargs["kwargs"]["purpose"], sa=kwargs["kwargs"]["sa"])
     elif data_type == 'inflation':
         return get_inflation_data(kwargs['country_code'], kwargs['start_year'], kwargs['end_year'])
     elif data_type == 'interest_rate':
@@ -280,6 +298,6 @@ def get_simle_data():
 if __name__ == "__main__":
     inflation_data = get_inflation_data('USA', 2000, 2020)
     for inf in inflation_data["Inflation"]:
-        print(inf)
+        print(inf)'''
 
     
