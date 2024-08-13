@@ -12,24 +12,27 @@ from modules.fine_tuning import lag_llama_ft
 # import libraries
 import itertools
 
-# parameters
+
+
+# data-specific parameters
+TYPE_OF_DATA = ["return", "stock", "index", "crypto", "exchange_rate", "commodity"] 
+TICKER = ["IBM"]
+FREQUENCY = ["minutely", "daily", "weekly", "monthly"]
+START_DATE = ["2023-03-01"] # fixed
+END_DATE = ["2024-03-01"] # fixed 
+
+# experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
-TICKER = ["S&P 500"] # fixed
-FREQUENCY = ["minutely"] 
-TYPE_OF_DATA = ["return"] 
-MODELS = ["arima", "llama", "autoregressor", "fine-tuned Llama"] # fixed non-argument
 FOLDS = [20] # fixed
 CONTEXT_LENGTH = [32, 64, 128]
-METRICS = ['r2', 'mse', 'mae', 'rmse', 'mda', "mape"] # fixed non-argument
 
 # fine-tuning parameters
 BATCH_SIZE = [5] # fixed
 MAX_EPOCHS = [4] # fixed
+FT_LENGTH = [150, 300, 500]
+FT_FREQUENCY = [5] # fixed
+FT_GAP = [0, 32, 64, 128, 256]
 
-# data parameters
-FT_LENGTH = [100]
-START_DATE = ["2023-07-07"] # fixed
-END_DATE = ["2024-07-07"] # fixed
 
 # experiment parameters
 parameters = [
@@ -43,7 +46,9 @@ parameters = [
     MAX_EPOCHS,
     FT_LENGTH,
     START_DATE,
-    END_DATE
+    END_DATE,
+    FT_FREQUENCY,
+    FT_GAP
 ]
 
 # all combinations of parameters
@@ -62,5 +67,7 @@ for combination in all_combinations:
         max_epochs=combination[7],
         ft_length=combination[8],
         start_date=combination[9],
-        end_date=combination[10]
+        end_date=combination[10],
+        ft_frequency=combination[11],
+        ft_gap=combination[12]
     )

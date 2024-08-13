@@ -35,6 +35,13 @@ def get_data(**kwargs):
             'weekly': 'TIME_SERIES_WEEKLY',
             'monthly': 'TIME_SERIES_MONTHLY'
         },
+        'return': {
+            'minutely': 'TIME_SERIES_INTRADAY',
+            'hourly': 'TIME_SERIES_INTRADAY',
+            'daily': 'TIME_SERIES_DAILY',
+            'weekly': 'TIME_SERIES_WEEKLY',
+            'monthly': 'TIME_SERIES_MONTHLY'
+        },
         'index': {
             'minutely': 'TIME_SERIES_INTRADAY',
             'hourly': 'TIME_SERIES_INTRADAY',
@@ -111,6 +118,19 @@ def get_data(**kwargs):
 
     df = df.reset_index()
     df.columns = ["ds", "y"]
+
+    if data_type == "return":
+        returns_df = df.copy()
+    
+        # Calculate returns for each column except the first one ('ds')
+        for col in returns_df.columns[1:]:
+            returns_df[col] = returns_df[col].pct_change()
+        
+        # Drop the first row because pct_change will result in NaN for the first entry
+        returns_df.dropna(inplace=True)
+        
+        return returns_df
+
     
     return df
 

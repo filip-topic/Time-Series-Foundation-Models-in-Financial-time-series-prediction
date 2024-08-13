@@ -278,7 +278,6 @@ def get_tscv_results(data,
                      batch_size,
                      max_epochs,  
                      fine_tune_frequency = 30,
-                     tscv_repeats = 1,
                      ft_gap = 0):
 
     # initializing empty lists of outputs
