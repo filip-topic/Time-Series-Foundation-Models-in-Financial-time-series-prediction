@@ -38,7 +38,7 @@ def save_results(prediction_length,
     #ft_length = len(ft_data)
 
     if folds == "max":
-        folds = int((data_length - ft_length) / prediction_length)
+        folds = int((data_length - ft_length - ft_gap) / prediction_length)
     
     # getting the TSCV results
     r, p = get_tscv_results(data = data,
@@ -46,7 +46,7 @@ def save_results(prediction_length,
                            context_length=context_length, 
                            folds=folds, 
                            frequency=frequency,
-                           fine_tune_length=ft_length,
+                           ft_length=ft_length,
                            batch_size=batch_size,
                            max_epochs=max_epochs,
                            fine_tune_frequency=ft_frequency,

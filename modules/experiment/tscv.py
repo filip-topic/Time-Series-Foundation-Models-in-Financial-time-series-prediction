@@ -274,11 +274,16 @@ def get_tscv_results(data,
                      context_length, 
                      folds, 
                      frequency, 
-                     fine_tune_length, 
+                     ft_length, 
                      batch_size,
                      max_epochs,  
                      fine_tune_frequency = 30,
-                     ft_gap = 0):
+                     ft_gap = 0,
+                     tscv_repeats = 5):
+    
+    # stopping criteria for inputs that would break this function
+    if folds >= int((len(data) - ft_length - ft_gap) / prediction_horizon):
+        raise ValueError("Too many folds for the given length of data, fine-tune length and fine-tune gap")
 
     # initializing empty lists of outputs
     results = []
@@ -298,7 +303,7 @@ def get_tscv_results(data,
     timestamps = []
 
     # TSCV iterable object
-    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size = fine_tune_length + ft_gap)
+    tscv = TimeSeriesSplit(n_splits=folds, test_size=prediction_horizon, max_train_size = ft_length + ft_gap)
     series = data["y"]
     i=0
 
@@ -307,7 +312,7 @@ def get_tscv_results(data,
 
         start = time.time()
 
-        ft_index = train_index[:fine_tune_length]
+        ft_index = train_index[:ft_length]
         train_index = train_index[-1*context_length:]
 
         # subsetting the original data according to train/test split
