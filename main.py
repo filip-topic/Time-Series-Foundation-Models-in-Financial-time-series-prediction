@@ -12,16 +12,20 @@ from modules.fine_tuning import lag_llama_ft
 # import libraries
 import itertools
 from collections import namedtuple
-from datetime import datetime
+from datetime import datetime, timedelta
 
+
+today_date = datetime.today().strftime('%Y-%m-%d')
+tomorrow_date = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["return", "stock", "index", "crypto", "exchange_rate", "commodity"] 
-TICKER = ["IBM", "S&P500", "BTC", "USD/GBP", "AUX"]
+TYPE_OF_DATA = ["return", "index", "exchange_rate", "commodity", "crypto"] 
+TICKER = ["S&P 500", "FTSE 100", "NASDAQ Composite", "Dow Jones Industrial Average", "USD/GBP", "WTI", "BTC", "ETH"]
 FREQUENCY = ["minutely", "daily", "weekly", "monthly"]
-START_DATE = ["2023-03-01", "2024-08-05"] 
-END_DATE = ["2024-03-01", "2024-08-09"] 
+START_DATE = ["2022-01-01", yesterday_date] 
+END_DATE = ["2024-01-01", today_date, tomorrow_date] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
@@ -84,9 +88,9 @@ def filter_combinations(params):
     # ticker constraints
     if params.type_of_data == "stock" and params.ticker not in ["IBM"]:
         return False
-    if params.type_of_data == "index" and params.ticker not in ["S&P500"]:
+    if params.type_of_data == "index" and params.ticker not in ["S&P 500", "FTSE 100", "NASDAQ Composite", "Dow Jones Industrial Average"]:
         return False
-    if params.type_of_data == "crypto" and params.ticker not in ["BTC"]:
+    if params.type_of_data == "crypto" and params.ticker not in ["BTC", "ETH"]:
         return False
     if params.type_of_data == "exchange_rate" and params.ticker not in ["USD/GBP"]:
         return False
@@ -94,15 +98,8 @@ def filter_combinations(params):
         return False
 
     # frequency constraints
-    if params.type_of_data in ["exchange_rate"] and params.ticker in ["minutely", "hourly"]: # we can only get very recent data
-        return False
-    
     if params.type_of_data in ["commodity"] and params.ticker in ["minutely", "hourly"]: # we can only get daily, weekly and monthly data
         return False
-
-    
-    # for stocks we can only get trailing month of minutely data
-    # for commodities and exchange rates only last two days
     
     # start_date and end_date constraints
     if params.start_date > params.end_date:
@@ -113,16 +110,21 @@ def filter_combinations(params):
     end = datetime.strptime(params.end_date, "%Y-%m-%d")
     difference = end - start
     gap = difference.days
-    if params.frequency == "minutely" and gap > 1:
+    if params.frequency == "minutely" and gap > 2:
+        return False
+    if params.frequency == "daily" and gap < 200:
         return False
     
     # start and end time cosntraints
-    if params.ticker == "BTC" and params.start_date < "2023-08-31":
+        # this is to make sure we only request the data we can get
+    if params.data_type in ["crypto", "exchange_rate"] and params.frequency == "minutely" and params.end_date != tomorrow_date:
+        return False
+    
+        # this is to make sure we only get one day worth od index data (yesterday)
+    if params.data_type == "index" and params.frequency == "minutely" and params.end_date != today_date:
         return False
 
     
-
-
 
     return True
 
