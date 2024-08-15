@@ -17,11 +17,9 @@ def save_results(prediction_length,
                 ft_frequency,
                 ft_gap,
                 start_date,
-                end_date):
-    
-    if frequency in ["minutely", "hourly"]:
-        start_date = "2024-08-05"
-        end_date = "2024-08-09"
+                end_date,
+                tscv_repeats):
+
 
     # data config
     data_config = {"ticker" : ticker,
@@ -50,7 +48,8 @@ def save_results(prediction_length,
                            batch_size=batch_size,
                            max_epochs=max_epochs,
                            fine_tune_frequency=ft_frequency,
-                           ft_gap = ft_gap)
+                           ft_gap = ft_gap,
+                           tscv_repeats=tscv_repeats)
     
     # experiment name
     experiment_name = f"P_L={prediction_length}__T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__D_L={data_length}.csv"

@@ -23,21 +23,22 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 # data-specific parameters
 TYPE_OF_DATA = ["return", "index", "exchange_rate", "commodity", "crypto"] 
 TICKER = ["S&P 500", "FTSE 100", "NASDAQ Composite", "Dow Jones Industrial Average", "USD/GBP", "WTI", "BTC", "ETH"]
-FREQUENCY = ["minutely", "daily", "weekly", "monthly"]
-START_DATE = ["2022-01-01", yesterday_date] 
+FREQUENCY = ["minutely", "daily"]
+START_DATE = ["2021-01-01", yesterday_date] 
 END_DATE = ["2024-01-01", today_date, tomorrow_date] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
-FOLDS = [20] # fixed
+FOLDS = [1] # fixed
 CONTEXT_LENGTH = [32, 64, 128]
+TSCV_REPEATS = [30]
 
 # fine-tuning parameters
 BATCH_SIZE = [5] # fixed
 MAX_EPOCHS = [4] # fixed
-FT_LENGTH = [150, 300, 500]
+FT_LENGTH = [128, 256, 512]
 FT_FREQUENCY = [5] # fixed
-FT_GAP = [0, 32, 64, 128, 256]
+FT_GAP = [0]
 
 # filter-specific 
 
@@ -56,7 +57,8 @@ ExperimentParams = namedtuple('ExperimentParams', [
     'start_date', 
     'end_date', 
     'ft_frequency', 
-    'ft_gap'
+    'ft_gap',
+    "tscv_repeats"
 ])
 
 # experiment parameters
@@ -73,7 +75,8 @@ parameters = [
     START_DATE,
     END_DATE,
     FT_FREQUENCY,
-    FT_GAP
+    FT_GAP,
+    TSCV_REPEATS
 ]
 
 # all combinations of parameters
@@ -124,7 +127,9 @@ def filter_combinations(params):
     if params.data_type == "index" and params.frequency == "minutely" and params.end_date != today_date:
         return False
 
-    
+    # fine-tune length constraint
+    if params.ft_length != 4 * params.context_length:
+        return False
 
     return True
 
@@ -148,5 +153,6 @@ for combination in valid_combinations_named:
         start_date=combination.start_date,
         end_date=combination.end_date,
         ft_frequency=combination.ft_frequency,
-        ft_gap=combination.ft_gap
+        ft_gap=combination.ft_gap,
+        tscv_repeats=combination.tscv_repeats
     )
