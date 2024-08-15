@@ -1,8 +1,11 @@
 import yfinance as yf
 import requests
 import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta
 import os
+
+from modules.data import data_reader
 
 
 
@@ -12,9 +15,16 @@ def get_data(**kwargs):
 
     data_type = kwargs["type"]
     frequency = kwargs["frequency"]
+    # for credit card data:
+    if data_type == "credit_card":
+        df = data_reader.read_data(match = ["credit_card", frequency], location=os.path.join("data", "credit_card"), file_type="xlsx")[0]
+        return df
+
+    
     symbol = kwargs["ticker"]
-    start_date = kwargs["start"]
-    end_date = kwargs["end"]
+    if "start" in kwargs.keys():
+        start_date = kwargs["start"]
+        end_date = kwargs["end"]
 
     interval_mapping = {
         'minutely': '1min',
@@ -69,8 +79,9 @@ def get_data(**kwargs):
     if data_type != "commodity":
         params["function"] = function_map[data_type][frequency]
     # unless we request commodities
-    else:
+    if data_type == "commodity":
         params["function"] = symbol
+        params["interval"] = frequency
 
     # this is for calls that request intraday frequencies
     if frequency in ['minutely', 'hourly']:
@@ -92,32 +103,47 @@ def get_data(**kwargs):
 
         
 
-    #url = base_url + f"?function={params["function"]}&symbol={params["sy"]}"
-    response = requests.get(base_url, params=params)
-    #return response.json() # for testing purposes
-    data = response.json()
+    if data_type != "index":
+        response = requests.get(base_url, params=params)
+        data = response.json()
 
-    time_series_key = next((key for key in data if 'Time Series' in key or 'FX' in key or 'Time Series' in key), None)
-    if time_series_key is None:
-        raise ValueError("Could not find the time series data in the response.")
-    
-    time_series = data[time_series_key]
+        time_series_key = next((key for key in data if 'Time Series' in key or 'FX' in key or "data" in key), None)
+        if time_series_key is None:
+            raise ValueError("Could not find the time series data in the response.")
+        
+        time_series = data[time_series_key]
     
     # Convert the data to a pandas DataFrame
-    df = pd.DataFrame.from_dict(time_series, orient='index')
-    
-    # Ensure that we have 'close' price column
-    close_column = '4. close' if '4. close' in df.columns else 'Close'
-    
-    # Convert the index to datetime and filter by start and end date
-    df.index = pd.to_datetime(df.index)
-    df = df[(df.index >= start_date) & (df.index <= end_date)]
-    
-    # Keep only the close price column
-    df = df[[close_column]].rename(columns={close_column: 'Close'})
 
-    df = df.reset_index()
-    df.columns = ["ds", "y"]
+    if data_type == "commodity":
+        df = pd.DataFrame(time_series)
+        df['date'] = pd.to_datetime(df['date'])
+        df.columns = ["ds", "y"]
+        df['y'] = df['y'].replace('.', np.nan)
+        df['y'] = df['y'].fillna(method='bfill') # imputing the missing values
+        # Convert the 'y' column to float
+
+    elif data_type == "index":
+        df = get_index_data(ticker=symbol, frequency=frequency, start=start_date, end=end_date)
+
+    else:
+        df = pd.DataFrame.from_dict(time_series, orient='index')
+        # Ensure that we have 'close' price column
+        close_column = '4. close' if '4. close' in df.columns else 'Close'
+        # Convert the index to datetime and filter by start and end date
+        df.index = pd.to_datetime(df.index)
+        # Keep only the close price column
+        df = df[[close_column]].rename(columns={close_column: 'Close'})
+        df = df.reset_index()
+        df.columns = ["ds", "y"]
+    
+    df["y"] = df["y"].astype(float)
+
+
+    
+    if "start" in kwargs.keys():
+        df = df[(df["ds"] >= start_date) & (df["ds"] < end_date)]
+    
 
     if data_type == "return":
         returns_df = df.copy()
@@ -139,7 +165,7 @@ def get_data(**kwargs):
 
 
 
-'''def get_stock_price_data(ticker: str, frequency = "daily", start = "2023-07-09", end = "2024-07-09"):
+def get_index_data(ticker: str, frequency = "daily", start = "", end = ""):
     freq_map = {
         "minutely": "1m",
         "hourly": "60m",
@@ -149,15 +175,7 @@ def get_data(**kwargs):
         "quarterly": "3mo"
     }
 
-    """
-    if start == "":
-        end = datetime.now()
-        start = end - timedelta(days=365 * years)
-    else:
-        start = datetime.strptime(start, "%Y-%m-%d")
-        end = start + timedelta(days=365 * years)
-        end = end.strftime("%Y-%m-%d")
-    """
+   
     ################## for index data ###################################
     indices = {
     'S&P 500': '^GSPC',
@@ -218,7 +236,7 @@ def get_data(**kwargs):
 
     return data
 
-def get_inflation_data(country_code: str, start_year: int, end_year: int):
+'''def get_inflation_data(country_code: str, start_year: int, end_year: int):
     url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/FP.CPI.TOTL?date={start_year}:{end_year}&format=json"
     response = requests.get(url)
     data = response.json()

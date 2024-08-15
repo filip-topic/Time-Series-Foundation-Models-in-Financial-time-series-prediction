@@ -12,6 +12,7 @@ from modules.fine_tuning import lag_llama_ft
 # import libraries
 import itertools
 from collections import namedtuple
+from datetime import datetime
 
 
 
@@ -89,16 +90,36 @@ def filter_combinations(params):
         return False
     if params.type_of_data == "exchange_rate" and params.ticker not in ["USD/GBP"]:
         return False
-    if params.type_of_data == "commodity" and params.ticker not in ["AUX"]:
+    if params.type_of_data == "commodity" and params.ticker not in ["WTI"]:
         return False
 
     # frequency constraints
-    if params.type_of_data == "commodity" and params.ticker in ["minutely", "hourly"]:
+    if params.type_of_data in ["exchange_rate"] and params.ticker in ["minutely", "hourly"]: # we can only get very recent data
         return False
+    
+    if params.type_of_data in ["commodity"] and params.ticker in ["minutely", "hourly"]: # we can only get daily, weekly and monthly data
+        return False
+
+    
+    # for stocks we can only get trailing month of minutely data
+    # for commodities and exchange rates only last two days
     
     # start_date and end_date constraints
     if params.start_date > params.end_date:
         return False
+    
+        # this is to make sure that for minutely data we only use data from one day
+    start = datetime.strptime(params.start_date, "%Y-%m-%d")
+    end = datetime.strptime(params.end_date, "%Y-%m-%d")
+    difference = end - start
+    gap = difference.days
+    if params.frequency == "minutely" and gap > 1:
+        return False
+    
+    # start and end time cosntraints
+    if params.ticker == "BTC" and params.start_date < "2023-08-31":
+        return False
+
     
 
 
