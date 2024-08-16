@@ -316,6 +316,7 @@ def get_tscv_results(data,
     if max_folds_per_repeat < folds:
         raise ValueError("Too many TSCV repeats for the given length of data, fine-tuning length and fine-tune gap")
 
+    fold_counter = 0
 
     # TSCV loop
     for train_index, test_index in tscv.split(series):
@@ -327,8 +328,11 @@ def get_tscv_results(data,
             i += 1
             continue
         
+        # ft and train indexes
         ft_index = train_index[:ft_length] 
         train_index = train_index[-1*context_length:] 
+
+        fold_counter += 1
 
 
         # subsetting the original data according to train/test split
@@ -392,7 +396,7 @@ def get_tscv_results(data,
         i += 1      
         end = time.time()
         elapsed_time = end - start
-        print(f"Fold {i}/{folds} finished in: {elapsed_time:.2f} seconds")
+        print(f"Fold {fold_counter}/{folds} finished in: {elapsed_time:.2f} seconds")
         first_valid = test_index[0]
         last_valid = test_index[-1]
         print(f"Prediction from   {data.iloc[first_valid]['ds']}   until   {data.iloc[last_valid]['ds']}")

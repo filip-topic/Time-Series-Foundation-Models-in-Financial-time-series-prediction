@@ -61,6 +61,8 @@ def save_results(prediction_length,
     print(f"Experiment finished in: {elapsed_time:.2f} seconds")
     
     # experiment name
+    if "/" in ticker:
+        ticker = ticker.replace("/", "")
     experiment_name = f"T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__FT_F={ft_frequency}__FT_G={ft_gap}__TSCV_R={tscv_repeats}.csv"
 
     # saving the results

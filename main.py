@@ -23,7 +23,7 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 # data-specific parameters
 TYPE_OF_DATA = ["index", "exchange_rate", "commodity", "crypto"] 
 RTRN = [True]
-TICKER = ["S&P 500", "USD/GBP", "WTI", "BTC"] # "NASDAQ Composite", "Dow Jones Industrial Average"
+TICKER = ["USD/GBP", "WTI", "BTC"] # "NASDAQ Composite", "Dow Jones Industrial Average"
 FREQUENCY = ["minutely", "daily"]
 START_DATE = ["2022-01-01", yesterday_date] 
 END_DATE = ["2024-01-01", today_date, tomorrow_date] 
