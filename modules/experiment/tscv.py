@@ -305,29 +305,31 @@ def get_tscv_results(data,
 
     # TSCV iterable object
     # adjusted for repeating tscv
-    tscv = TimeSeriesSplit(n_splits=folds * tscv_repeats, test_size=prediction_horizon, max_train_size = ft_length + ft_gap)
+    max_folds = int((len(data) - ft_length - ft_gap) / prediction_horizon)
+    tscv = TimeSeriesSplit(n_splits=max_folds, test_size=prediction_horizon, max_train_size = ft_length + ft_gap)
     series = data["y"]
     i=0
 
     # tscv repeats functionality
-    max_folds = int((len(data) - ft_length - ft_gap) / prediction_horizon)
-    max_tscv_repeats = max_folds // folds
-    if max_tscv_repeats < tscv_repeats:
+    
+    max_folds_per_repeat = max_folds / tscv_repeats
+    if max_folds_per_repeat < folds:
         raise ValueError("Too many TSCV repeats for the given length of data, fine-tuning length and fine-tune gap")
-    inverse_coverage_ratio = max_tscv_repeats / tscv_repeats
-    jump = int(inverse_coverage_ratio + 1) * folds
-    tscv_offset = 0
+
 
     # TSCV loop
     for train_index, test_index in tscv.split(series):
 
         start = time.time()
 
-        tscv_offset = (i // folds) * jump
+        # tscv repeats functionality
+        if i % max_folds_per_repeat >= folds:
+            i += 1
+            continue
         
-        ft_index = train_index[:ft_length] - tscv_offset
-        train_index = train_index[-1*context_length:] - tscv_offset
-        test_index = test_index - tscv_offset
+        ft_index = train_index[:ft_length] 
+        train_index = train_index[-1*context_length:] 
+
 
         # subsetting the original data according to train/test split
         train = data.iloc[train_index]
