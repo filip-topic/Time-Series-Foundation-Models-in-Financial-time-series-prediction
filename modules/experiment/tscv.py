@@ -15,7 +15,7 @@ sys.path.append(base_dir)
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-from modules.models import arima, lag_llama, autoregressor, prophet, timegpt
+from modules.models import arima, lag_llama, autoregressor, prpht, timegpt
 from modules.fine_tuning import lag_llama_ft
 
 
@@ -312,7 +312,7 @@ def get_tscv_results(data,
     # tscv repeats functionality
     max_folds = int((len(data) - ft_length - ft_gap) / prediction_horizon)
     max_tscv_repeats = max_folds // folds
-    if max_tscv_repeats > tscv_repeats:
+    if max_tscv_repeats < tscv_repeats:
         raise ValueError("Too many TSCV repeats for the given length of data, fine-tuning length and fine-tune gap")
     inverse_coverage_ratio = max_tscv_repeats / tscv_repeats
     jump = int(inverse_coverage_ratio + 1) * folds
@@ -339,42 +339,22 @@ def get_tscv_results(data,
         lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length, frequency=frequency)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
-        prophet_predictions = prophet.get_prophet_predictions(train, prediction_horizon)
+        prophet_predictions = prpht.get_prophet_predictions(train, prediction_horizon)
         time_gpt_predictions = timegpt.get_timegpt_forecast(train, prediction_horizon, frequency)
 
         ######################### fine-tuning lag-llama and getting predictions ##############################
 
-        if (i % fine_tune_frequency == 0) & (fine_tune_frequency < folds):
+        if (i % fine_tune_frequency == 0):
 
-            """print("ENTERED THE IF STATEMENT")
-            print("TRAIN INDEX")
+            #print("ENTERED THE IF STATEMENT")
+            """print("TRAIN INDEX")
             print(train_index)
             print("FT INDEX")
             print(ft_index)"""
 
-            # removing the first fine_tune_frequency rows to keep fine_tune length consistant
+        
             ft_data = data.iloc[ft_index]
-            # adding the fine_tune_frequency number of rows before the train index
-
-            ######################testing####################
-            #print("TRAIN INDEX:")
-            #print(train_index)
-            ##########################################
-
-            #ft_data = pd.concat([ft_data, data.iloc[train_index[0] - fine_tune_frequency: train_index[0]]])
-
-            ############## testing #############
-            # do with min and max
-            """
-            print("FT_DATA timestamps")
-            for index, row in ft_data.iterrows(): 
-                print(row["ds"])
-
-            print("TRAIN DATA TIMESTAMPS")
-            for index, row in train.iterrows():
-                print(row["ds"])
-            """
-            #################################
+            
 
             ft_train_data = lag_llama.prepare_data(data=ft_data, 
                                        prediction_length=0, 
@@ -399,7 +379,7 @@ def get_tscv_results(data,
         autoregressor_preds.append(autoregressor_predictions[0])
         ft_llama_preds.append(ft_lag_llama_predictions[0])
         prophet_preds.append(prophet_predictions[0])
-        time_gpt_preds.append(time_gpt_preds[0])
+        time_gpt_preds.append(time_gpt_predictions[0])
         # appending the actual values amnd timestamp
         # actual values
         actual.append(valid[0])

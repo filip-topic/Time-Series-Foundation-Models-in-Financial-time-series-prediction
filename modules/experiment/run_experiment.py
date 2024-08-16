@@ -1,9 +1,8 @@
-from modules.data import  data_reader, data_loader
+from modules.data import data_loader
 from modules.sr import result_saver
-from modules.models import lag_llama
-from modules.experiment.tscv import get_tscv_results, get_summary, extract_metrics
-from modules.visualization import graphs
-from modules.fine_tuning import lag_llama_ft
+from modules.experiment.tscv import get_tscv_results
+
+import time
 
 def save_results(prediction_length,
                 ticker, 
@@ -18,7 +17,8 @@ def save_results(prediction_length,
                 ft_gap,
                 start_date,
                 end_date,
-                tscv_repeats):
+                tscv_repeats,
+                rtrn):
 
 
     # data config
@@ -26,7 +26,8 @@ def save_results(prediction_length,
                    "type" : type_of_data,
                    "frequency" : frequency,
                    "start" : start_date,
-                   "end" : end_date}
+                   "end" : end_date,
+                   "rtrn" : rtrn}
     
     # loading the data
     data = data_loader.get_data(**data_config)
@@ -38,6 +39,9 @@ def save_results(prediction_length,
     if folds == "max":
         folds = int((data_length - ft_length - ft_gap) / prediction_length)
     
+    print(f"P_L={prediction_length}__T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__D_L={data_length}__FT_F={ft_frequency}__FT_G={ft_gap}__TSCV_R={tscv_repeats}")
+    start = time.time()
+
     # getting the TSCV results
     r, p = get_tscv_results(data = data,
                            prediction_horizon=prediction_length,
@@ -51,9 +55,19 @@ def save_results(prediction_length,
                            ft_gap = ft_gap,
                            tscv_repeats=tscv_repeats)
     
-    # experiment name
-    experiment_name = f"P_L={prediction_length}__T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__D_L={data_length}.csv"
+    end = time.time()
 
+    elapsed_time = end - start
+    print(f"Experiment finished in: {elapsed_time:.2f} seconds")
+    
+    # experiment name
+    experiment_name = f"T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__FT_F={ft_frequency}__FT_G={ft_gap}__TSCV_R={tscv_repeats}.csv"
+    #experiment_name = f"test.csv"
+    print(experiment_name)
+    print("---------------")
+    print(r)
+    print("---------------")
+    print(p)
     # saving the results
     result_saver.save_results(r, experiment_name, type="evaluation")
     result_saver.save_results(p, experiment_name, type="prediction")    

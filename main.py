@@ -21,23 +21,24 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["return", "index", "exchange_rate", "commodity", "crypto"] 
-TICKER = ["S&P 500", "FTSE 100", "NASDAQ Composite", "Dow Jones Industrial Average", "USD/GBP", "WTI", "BTC", "ETH"]
+TYPE_OF_DATA = ["index", "exchange_rate", "commodity", "crypto"] 
+RTRN = [True]
+TICKER = ["S&P 500", "NASDAQ Composite", "Dow Jones Industrial Average", "USD/GBP", "WTI", "BTC"]
 FREQUENCY = ["minutely", "daily"]
-START_DATE = ["2021-01-01", yesterday_date] 
+START_DATE = ["2022-01-01", yesterday_date] 
 END_DATE = ["2024-01-01", today_date, tomorrow_date] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
-FOLDS = [1] # fixed
+FOLDS = [5] # fixed
 CONTEXT_LENGTH = [32, 64, 128]
-TSCV_REPEATS = [30]
+TSCV_REPEATS = [6] 
 
 # fine-tuning parameters
 BATCH_SIZE = [5] # fixed
 MAX_EPOCHS = [4] # fixed
-FT_LENGTH = [128, 256, 512]
-FT_FREQUENCY = [5] # fixed
+FT_LENGTH = [200]
+FT_FREQUENCY = [5] 
 FT_GAP = [0]
 
 # filter-specific 
@@ -58,7 +59,8 @@ ExperimentParams = namedtuple('ExperimentParams', [
     'end_date', 
     'ft_frequency', 
     'ft_gap',
-    "tscv_repeats"
+    "tscv_repeats",
+    "rtrn"
 ])
 
 # experiment parameters
@@ -76,7 +78,8 @@ parameters = [
     END_DATE,
     FT_FREQUENCY,
     FT_GAP,
-    TSCV_REPEATS
+    TSCV_REPEATS,
+    RTRN
 ]
 
 # all combinations of parameters
@@ -101,7 +104,7 @@ def filter_combinations(params):
         return False
 
     # frequency constraints
-    if params.type_of_data in ["commodity"] and params.ticker in ["minutely", "hourly"]: # we can only get daily, weekly and monthly data
+    if params.type_of_data in ["commodity"] and params.frequency in ["minutely", "hourly"]: # we can only get daily, weekly and monthly data
         return False
     
     # start_date and end_date constraints
@@ -117,19 +120,21 @@ def filter_combinations(params):
         return False
     if params.frequency == "daily" and gap < 200:
         return False
+    if params.frequency == "daily" and gap > 740:
+        return False
     
     # start and end time cosntraints
         # this is to make sure we only request the data we can get
-    if params.data_type in ["crypto", "exchange_rate"] and params.frequency == "minutely" and params.end_date != tomorrow_date:
+    if params.type_of_data in ["crypto", "exchange_rate"] and params.frequency == "minutely" and params.end_date != tomorrow_date:
         return False
     
         # this is to make sure we only get one day worth od index data (yesterday)
-    if params.data_type == "index" and params.frequency == "minutely" and params.end_date != today_date:
+    if params.type_of_data == "index" and params.frequency == "minutely" and params.end_date != today_date:
         return False
 
     # fine-tune length constraint
-    if params.ft_length != 4 * params.context_length:
-        return False
+    """if params.ft_length != 4 * params.context_length:
+        return False"""
 
     return True
 
@@ -154,5 +159,7 @@ for combination in valid_combinations_named:
         end_date=combination.end_date,
         ft_frequency=combination.ft_frequency,
         ft_gap=combination.ft_gap,
-        tscv_repeats=combination.tscv_repeats
+        tscv_repeats=combination.tscv_repeats,
+        rtrn = combination.rtrn
     )
+    break # for testing purposes

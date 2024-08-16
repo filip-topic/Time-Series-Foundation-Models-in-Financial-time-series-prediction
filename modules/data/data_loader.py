@@ -145,7 +145,7 @@ def get_data(**kwargs):
         df = df[(df["ds"] >= start_date) & (df["ds"] < end_date)]
     
 
-    if data_type == "return":
+    if kwargs["rtrn"]:
         returns_df = df.copy()
     
         # Calculate returns for each column except the first one ('ds')
