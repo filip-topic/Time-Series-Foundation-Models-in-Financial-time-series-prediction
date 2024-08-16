@@ -62,12 +62,7 @@ def save_results(prediction_length,
     
     # experiment name
     experiment_name = f"T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__FT_F={ft_frequency}__FT_G={ft_gap}__TSCV_R={tscv_repeats}.csv"
-    #experiment_name = f"test.csv"
-    print(experiment_name)
-    print("---------------")
-    print(r)
-    print("---------------")
-    print(p)
+
     # saving the results
     result_saver.save_results(r, experiment_name, type="evaluation")
     result_saver.save_results(p, experiment_name, type="prediction")    

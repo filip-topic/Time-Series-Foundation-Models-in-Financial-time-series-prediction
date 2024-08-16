@@ -324,9 +324,10 @@ def get_tscv_results(data,
         start = time.time()
 
         tscv_offset = (i // folds) * jump
-
+        
         ft_index = train_index[:ft_length] - tscv_offset
         train_index = train_index[-1*context_length:] - tscv_offset
+        test_index = test_index - tscv_offset
 
         # subsetting the original data according to train/test split
         train = data.iloc[train_index]
@@ -398,23 +399,22 @@ def get_tscv_results(data,
     # filling in the results
     results = pd.DataFrame(columns=metrics)
     results.loc["arima"] = fill_metrics(actual, arima_preds)
-    results.loc["lag_llama"] = fill_metrics(actual, llama_preds)
     results.loc["autoregressor"] = fill_metrics(actual, autoregressor_preds)
-    results.loc["ft_lag_llama"] = fill_metrics(actual, ft_llama_preds)
     results.loc["prophet"] = fill_metrics(actual, prophet_preds)
+    results.loc["lag_llama"] = fill_metrics(actual, llama_preds)
+    results.loc["ft_lag_llama"] = fill_metrics(actual, ft_llama_preds)
     results.loc["timeGPT"] = fill_metrics(actual, time_gpt_preds)
 
     # filling in the predictions
     predictions = pd.DataFrame()
     predictions["arima"] = arima_preds
-    predictions["lag_llama"] = llama_preds
     predictions["autoregressor"] = autoregressor_preds
-    predictions["timestamp"] = timestamps
-    predictions["ft_lag_llama"] = ft_llama_preds
     predictions["prophet"] = prophet_preds
+    predictions["lag_llama"] = llama_preds
+    predictions["ft_lag_llama"] = ft_llama_preds
     predictions["timeGPT"] = time_gpt_preds
     predictions["actual"] = actual
-    
+    predictions["timestamp"] = timestamps
     # return statement
     return results, predictions
 
