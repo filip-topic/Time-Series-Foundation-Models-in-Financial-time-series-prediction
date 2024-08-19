@@ -9,7 +9,7 @@ nixtla_client = NixtlaClient(
 )
 
 
-def get_timegpt_forecast(data, prediction_length, frequency):
+def get_timegpt_forecast(data, prediction_length, frequency, ft_steps = 0):
 
     freq_map = {
         'minutely': 'T',  # minute frequency
@@ -20,7 +20,7 @@ def get_timegpt_forecast(data, prediction_length, frequency):
         'quarterly': 'Q'  # quarterly frequency
     } 
     
-    forecast_df = nixtla_client.forecast(df = data, h = prediction_length, freq = freq_map[frequency], time_col="ds", target_col="y")
+    forecast_df = nixtla_client.forecast(df = data, finetune_steps=ft_steps, h = prediction_length, freq = freq_map[frequency], time_col="ds", target_col="y")
 
     
 

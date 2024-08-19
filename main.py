@@ -21,7 +21,7 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["index", "exchange_rate", "commodity", "crypto"] 
+TYPE_OF_DATA = ["index", "fx", "commodity", "crypto"] 
 RTRN = [True]
 TICKER = ["NATURAL_GAS"] # "NASDAQ Composite", "Dow Jones Industrial Average"
 FREQUENCY = ["weekly"]

@@ -59,7 +59,7 @@ def get_data(**kwargs):
             'weekly': 'TIME_SERIES_WEEKLY',
             'monthly': 'TIME_SERIES_MONTHLY'
         },
-        'exchange_rate': {
+        'fx': {
             'minutely': 'FX_INTRADAY',
             'hourly': 'FX_INTRADAY',
             'daily': 'FX_DAILY',
@@ -93,7 +93,7 @@ def get_data(**kwargs):
         params["symbol"] = symbol
 
     # this is for calls that request exchange rates. it denotes which exchange rate to get
-    if data_type == 'exchange_rate':
+    if data_type == 'fx':
         params['from_symbol'] = symbol.split('/')[0]
         params['to_symbol'] = symbol.split('/')[1]
 
