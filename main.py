@@ -23,10 +23,10 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 # data-specific parameters
 TYPE_OF_DATA = ["index", "exchange_rate", "commodity", "crypto"] 
 RTRN = [True]
-TICKER = ["USD/GBP", "WTI", "BTC"] # "NASDAQ Composite", "Dow Jones Industrial Average"
-FREQUENCY = ["minutely", "daily"]
-START_DATE = ["2022-01-01", yesterday_date] 
-END_DATE = ["2024-01-01", today_date, tomorrow_date] 
+TICKER = ["NATURAL_GAS"] # "NASDAQ Composite", "Dow Jones Industrial Average"
+FREQUENCY = ["weekly"]
+START_DATE = ["2019-01-01"] 
+END_DATE = ["2024-01-01"] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
@@ -94,13 +94,13 @@ def filter_combinations(params):
     # ticker constraints
     if params.type_of_data == "stock" and params.ticker not in ["IBM"]:
         return False
-    if params.type_of_data == "index" and params.ticker not in ["S&P 500", "FTSE 100", "NASDAQ Composite", "Dow Jones Industrial Average"]:
+    if params.type_of_data == "index" and params.ticker not in ["S&P 500", "FTSE 100", "NASDAQ Composite", "DOWJ"]:
         return False
     if params.type_of_data == "crypto" and params.ticker not in ["BTC", "ETH"]:
         return False
     if params.type_of_data == "exchange_rate" and params.ticker not in ["USD/GBP"]:
         return False
-    if params.type_of_data == "commodity" and params.ticker not in ["WTI"]:
+    if params.type_of_data == "commodity" and params.ticker not in ["WTI", "NATURAL_GAS"]:
         return False
 
     # frequency constraints

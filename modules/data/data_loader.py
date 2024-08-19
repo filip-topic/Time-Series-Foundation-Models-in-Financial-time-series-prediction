@@ -181,7 +181,7 @@ def get_index_data(ticker: str, frequency = "daily", start = "", end = ""):
     'S&P 500': '^GSPC',
     'FTSE 100': '^FTSE',
     'NASDAQ Composite': '^IXIC',
-    'Dow Jones Industrial Average': '^DJI',
+    'DOWJ': '^DJI',
     'Russell 2000': '^RUT',
     'CAC 40': '^FCHI',
     'DAX': '^GDAXI',
