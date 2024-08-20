@@ -17,7 +17,7 @@ def get_data(**kwargs):
     frequency = kwargs["frequency"]
     # for credit card data:
     if data_type == "credit_card":
-        df = data_reader.read_data(match = ["credit_card", frequency], location=os.path.join("data", "credit_card"), file_type="xlsx")[0]
+        df = data_reader.read_data(match = ["credit_card", frequency], location=os.path.join("data", "credit_card"))
         return df
 
     
