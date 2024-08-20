@@ -18,7 +18,8 @@ def save_results(prediction_length,
                 start_date,
                 end_date,
                 tscv_repeats,
-                rtrn):
+                rtrn,
+                exogenous_data = False):
 
 
     # data config
@@ -31,15 +32,19 @@ def save_results(prediction_length,
     
     # loading the data
     data = data_loader.get_data(**data_config)
-    #ft_data = data_loader.get_data(data_type=type_of_data, kwargs=ft_data_config)
-
     data_length = len(data)
-    #ft_length = len(ft_data)
+
+    # exogenous data
+    x_df = None
+    if exogenous_data:
+        x_df = data_loader.get_exogenous_data(start_date=start_date, end_date=end_date)
+    
+
 
     if folds == "max":
         folds = int((data_length - ft_length - ft_gap) / prediction_length)
     
-    print(f"PL={prediction_length}__T={ticker}__FR={frequency}__TOD={type_of_data}__FO={folds}__CLTS={context_length}__SD={start_date}__ED={end_date}__FTL={ft_length}__DL={data_length}__FTF={ft_frequency}__FTG={ft_gap}__TSCVR={tscv_repeats}__BS={batch_size}__ME={max_epochs}")
+    print(f"PL={prediction_length}__T={ticker}__FR={frequency}__TOD={type_of_data}__FO={folds}__CLTS={context_length}__SD={start_date}__ED={end_date}__FTL={ft_length}__DL={data_length}__FTF={ft_frequency}__FTG={ft_gap}__TSCVR={tscv_repeats}__BS={batch_size}__ME={max_epochs}__ED={exogenous_data}")
     start = time.time()
 
     # getting the TSCV results
@@ -53,7 +58,8 @@ def save_results(prediction_length,
                            max_epochs=max_epochs,
                            fine_tune_frequency=ft_frequency,
                            ft_gap = ft_gap,
-                           tscv_repeats=tscv_repeats)
+                           tscv_repeats=tscv_repeats,
+                           exogenous_data=x_df)
     
     end = time.time()
 

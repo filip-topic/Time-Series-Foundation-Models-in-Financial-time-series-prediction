@@ -23,6 +23,7 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 # data-specific parameters
 TYPE_OF_DATA = ["index", "fx", "commodity", "crypto"] 
 RTRN = [True]
+EXOGENOUS_DATA = [True]
 TICKER = ["NATURAL_GAS"] # "NASDAQ Composite", "Dow Jones Industrial Average"
 FREQUENCY = ["weekly"]
 START_DATE = ["2019-01-01"] 
@@ -60,7 +61,8 @@ ExperimentParams = namedtuple('ExperimentParams', [
     'ft_frequency', 
     'ft_gap',
     "tscv_repeats",
-    "rtrn"
+    "rtrn",
+    "exogenous_data"
 ])
 
 # experiment parameters
@@ -79,7 +81,8 @@ parameters = [
     FT_FREQUENCY,
     FT_GAP,
     TSCV_REPEATS,
-    RTRN
+    RTRN,
+    EXOGENOUS_DATA
 ]
 
 # all combinations of parameters
@@ -94,7 +97,7 @@ def filter_combinations(params):
     # ticker constraints
     if params.type_of_data == "stock" and params.ticker not in ["IBM"]:
         return False
-    if params.type_of_data == "index" and params.ticker not in ["S&P 500", "FTSE 100", "NASDAQ Composite", "DOWJ"]:
+    if params.type_of_data == "index" and params.ticker not in ["S&P 500", "FTSE 100", "NASDAQ", "DOWJ"]:
         return False
     if params.type_of_data == "crypto" and params.ticker not in ["BTC", "ETH"]:
         return False
@@ -131,6 +134,12 @@ def filter_combinations(params):
         # this is to make sure we only get one day worth od index data (yesterday)
     if params.type_of_data == "index" and params.frequency == "minutely" and params.end_date != today_date:
         return False
+    
+    # exogenous variables constraint
+    if params.exogenous_data == True and params.frequency != "monthly":
+        return False
+    if params.exogenous_data == True and params.type_of_data not in ["index", "fx"]:
+        return False
 
     # fine-tune length constraint
     """if params.ft_length != 4 * params.context_length:
@@ -160,6 +169,7 @@ for combination in valid_combinations_named:
         ft_frequency=combination.ft_frequency,
         ft_gap=combination.ft_gap,
         tscv_repeats=combination.tscv_repeats,
-        rtrn = combination.rtrn
+        rtrn = combination.rtrn,
+        exogenous_data = combination.exogenous_data
     )
     #break # for testing purposes

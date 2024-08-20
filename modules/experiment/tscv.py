@@ -279,7 +279,8 @@ def get_tscv_results(data,
                      max_epochs,  
                      fine_tune_frequency = 30,
                      ft_gap = 0,
-                     tscv_repeats = 5):
+                     tscv_repeats = 5,
+                     exogenous_data = None):
     
     # stopping criteria for inputs that would break this function
     if folds >= int((len(data) - ft_length - ft_gap) / prediction_horizon):
@@ -300,6 +301,8 @@ def get_tscv_results(data,
     ft_llama_preds = []
     prophet_preds = []
     time_gpt_preds = []
+    ft_time_gpt_preds = []
+    ev_ft_time_gpt_preds = []
     actual = []
     timestamps = []
 
@@ -329,6 +332,7 @@ def get_tscv_results(data,
             continue
         
         # ft and train indexes
+        timegpt_index = train_index.copy()
         ft_index = train_index[:ft_length] 
         train_index = train_index[-1*context_length:] 
 
@@ -347,19 +351,16 @@ def get_tscv_results(data,
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
         prophet_predictions = prpht.get_prophet_predictions(train, prediction_horizon)
-        time_gpt_predictions = timegpt.get_timegpt_forecast(train, prediction_horizon, frequency)
+        time_gpt_predictions = timegpt.get_timegpt_forecast(data.iloc[timegpt_index], prediction_horizon, frequency)
+        ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[timegpt_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100)
+        if exogenous_data is not None:
+            ev_ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[timegpt_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100, x=exogenous_data)
+
 
         ######################### fine-tuning lag-llama and getting predictions ##############################
 
         if (i % fine_tune_frequency == 0):
 
-            #print("ENTERED THE IF STATEMENT")
-            """print("TRAIN INDEX")
-            print(train_index)
-            print("FT INDEX")
-            print(ft_index)"""
-
-        
             ft_data = data.iloc[ft_index]
             
 
@@ -387,6 +388,9 @@ def get_tscv_results(data,
         ft_llama_preds.append(ft_lag_llama_predictions[0])
         prophet_preds.append(prophet_predictions[0])
         time_gpt_preds.append(time_gpt_predictions[0])
+        ft_time_gpt_preds.append(ft_lag_llama_predictions[0])
+        if exogenous_data is not None:
+            ev_ft_time_gpt_preds.append(ev_ft_time_gpt_predictions[0])
         # appending the actual values amnd timestamp
         # actual values
         actual.append(valid[0])
@@ -410,6 +414,9 @@ def get_tscv_results(data,
     results.loc["lag_llama"] = fill_metrics(actual, llama_preds)
     results.loc["ft_lag_llama"] = fill_metrics(actual, ft_llama_preds)
     results.loc["timeGPT"] = fill_metrics(actual, time_gpt_preds)
+    results.loc["ft_timeGPT"] = fill_metrics(actual, ft_time_gpt_preds)
+    if exogenous_data is not None:
+        results.loc["ev_ft_timeGPT"] = fill_metrics(actual, ev_ft_time_gpt_preds)
 
     # filling in the predictions
     predictions = pd.DataFrame()
@@ -419,6 +426,9 @@ def get_tscv_results(data,
     predictions["lag_llama"] = llama_preds
     predictions["ft_lag_llama"] = ft_llama_preds
     predictions["timeGPT"] = time_gpt_preds
+    predictions["ft_timeGPT"] = ft_time_gpt_preds
+    if exogenous_data is not None:
+        predictions["ev_ft_timeGPT"] = ev_ft_time_gpt_preds
     predictions["actual"] = actual
     predictions["timestamp"] = timestamps
     # return statement

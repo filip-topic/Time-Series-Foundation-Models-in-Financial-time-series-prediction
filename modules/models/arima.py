@@ -7,7 +7,7 @@ import numpy as np
 import pmdarima as pm
 
 # automated dickey fuller test
-def adf(x):
+'''def adf(x):
     res = adfuller(x)
     print("Test-Statistic:", res[0])
     print("P-Value:", res[1])
@@ -62,11 +62,11 @@ def get_trained_arima_model(data):
 
 def arima_forecast(model, prediction_length):
    predictions = model.forecast(steps = prediction_length)
-   return pd.Series(predictions, index = test.index)
+   return pd.Series(predictions, index = test.index)'''
 
 # Uses AIC to chose p, q and KPSS unit root test for d
 def get_autoarima(data):
-   return pm.auto_arima(data["y"], stepwise = False, seasonal = False)
+   return pm.auto_arima(data["y"], suppress_warnings=True, stepwise = False, seasonal = False)
 
 def autoarima_predictions(model, prediction_length):
    return list(model.predict(n_periods = prediction_length))
