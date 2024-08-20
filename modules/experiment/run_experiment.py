@@ -39,7 +39,7 @@ def save_results(prediction_length,
     if folds == "max":
         folds = int((data_length - ft_length - ft_gap) / prediction_length)
     
-    print(f"P_L={prediction_length}__T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__D_L={data_length}__FT_F={ft_frequency}__FT_G={ft_gap}__TSCV_R={tscv_repeats}")
+    print(f"PL={prediction_length}__T={ticker}__FR={frequency}__TOD={type_of_data}__FO={folds}__CLTS={context_length}__SD={start_date}__ED={end_date}__FTL={ft_length}__DL={data_length}__FTF={ft_frequency}__FTG={ft_gap}__TSCVR={tscv_repeats}__BS={batch_size}__ME={max_epochs}")
     start = time.time()
 
     # getting the TSCV results

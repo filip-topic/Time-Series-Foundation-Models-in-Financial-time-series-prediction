@@ -9,7 +9,7 @@ nixtla_client = NixtlaClient(
 )
 
 
-def get_timegpt_forecast(data, prediction_length, frequency, ft_steps = 0):
+def get_timegpt_forecast(data, prediction_length, frequency, ft_steps = 0, x = None):
 
     freq_map = {
         'minutely': 'T',  # minute frequency
@@ -20,9 +20,32 @@ def get_timegpt_forecast(data, prediction_length, frequency, ft_steps = 0):
         'quarterly': 'Q'  # quarterly frequency
     } 
     
-    forecast_df = nixtla_client.forecast(df = data, finetune_steps=ft_steps, h = prediction_length, freq = freq_map[frequency], time_col="ds", target_col="y")
+    if x is None:
+        if ft_steps > 0:
+            forecast_df = nixtla_client.forecast(df = data, finetune_steps=ft_steps, h = prediction_length, freq = freq_map[frequency], time_col="ds", target_col="y")
+        else:
+            forecast_df = nixtla_client.forecast(df = data, h = prediction_length, freq = freq_map[frequency], time_col="ds", target_col="y")
+    else:
+        x_df_future = pd.DataFrame()
 
-    
+        # forecasting future exogenous variables
+        for col in x.columns:
+            if col == "ds":
+                continue
+            d = x[["ds", col]]
+            d.columns = ["ds", "y"]
+            fcst = nixtla_client.forecast(df=d, h=prediction_length, freq=freq_map[frequency], time_col="ds", target_col = "y")
+            x_df_future["ds"] = fcst["ds"]
+            x_df_future[col] = fcst["TimeGPT"]
+
+        #merging target variable with past exogenous variables
+        data = pd.merge(data, x, on="ds")
+
+        if ft_steps > 0:
+            forecast_df = nixtla_client.forecast(df = data, finetune_steps=ft_steps, X_df=x_df_future, h=prediction_length, time_col="ds", target_col="y")
+        else:
+            forecast_df = nixtla_client.forecast(df = data, X_df=x_df_future, h=prediction_length, time_col="ds", target_col="y")
+
 
     forecast = forecast_df.tail(prediction_length)["TimeGPT"]
 

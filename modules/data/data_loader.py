@@ -161,6 +161,42 @@ def get_data(**kwargs):
     return df
 
 
+def get_exogenous_data(start_date, end_date):
+    # inflation data
+    inflation_data = data_reader.read_data([""], "data/inflation")
+    inflation_data = inflation_data.loc[start_date:end_date].iloc[:-1]
+    inflation_data = inflation_data.reset_index()
+    inflation_data.ds = pd.to_datetime(inflation_data.ds)
+
+    # jobs data
+    '''jobs_data = data_reader.read_data([""], "data/jobs")
+    jobs_data = jobs_data.loc[start_date:end_date].iloc[:-1]
+    jobs_data = jobs_data.reset_index()
+    jobs_data.ds = pd.to_datetime(jobs_data.ds)'''
+
+    # jobs data
+    interest_rate_data = data_reader.read_data([""], "data/interest_rate")
+    interest_rate_data = interest_rate_data.loc[start_date:end_date].iloc[:-1]
+    interest_rate_data = interest_rate_data.reset_index()
+    interest_rate_data.ds = pd.to_datetime(interest_rate_data.ds)
+
+    # oul data
+    oil_price_data = get_data(type = "commodity", frequency = "monthly", start=start_date, end=end_date, ticker="WTI", rtrn = False)
+    oil_price_data.columns = ["ds", "x"]
+
+    # Merge the dataframes one by one on the 'ds' column
+    x_df = pd.merge(inflation_data, interest_rate_data, on='ds', suffixes=('_x1', '_x2'))
+    x_df = pd.merge(x_df, oil_price_data, on='ds')
+
+    # Rename the columns
+    x_df.columns = ['ds', 'x1', 'x2', 'x3']
+
+    return x_df
+
+
+
+
+
 
 
 
@@ -236,14 +272,14 @@ def get_index_data(ticker: str, frequency = "daily", start = "", end = ""):
 
     return data
 
-'''def get_inflation_data(country_code: str, start_year: int, end_year: int):
+def get_inflation_data(country_code: str, start_year: int, end_year: int):
     url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/FP.CPI.TOTL?date={start_year}:{end_year}&format=json"
     response = requests.get(url)
     data = response.json()
     inflation_data = pd.json_normalize(data[1])
     return inflation_data[['date', 'value']].rename(columns={'date': 'Year', 'value': 'Inflation'})
 
-def get_interest_rate_data(series_id: str, start: str, end: str, api_key: str):
+'''def get_interest_rate_data(series_id: str, start: str, end: str, api_key: str):
     url = f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}&api_key={api_key}&file_type=json&observation_start={start}&observation_end={end}"
     response = requests.get(url)
     data = response.json()

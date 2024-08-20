@@ -33,4 +33,5 @@ def read_data(match = [], location = "data", file_type = "csv"):
         data_frames = [pd.read_excel(os.path.join(data_folder_path, file), index_col=0, encoding=result['encoding']) for file in csv_files]
 
     
-    return data_frames
+    return pd.DataFrame(data_frames[0])
+    
