@@ -388,7 +388,7 @@ def get_tscv_results(data,
         ft_llama_preds.append(ft_lag_llama_predictions[0])
         prophet_preds.append(prophet_predictions[0])
         time_gpt_preds.append(time_gpt_predictions[0])
-        ft_time_gpt_preds.append(ft_lag_llama_predictions[0])
+        ft_time_gpt_preds.append(ft_time_gpt_predictions[0])
         if exogenous_data is not None:
             ev_ft_time_gpt_preds.append(ev_ft_time_gpt_predictions[0])
         # appending the actual values amnd timestamp
