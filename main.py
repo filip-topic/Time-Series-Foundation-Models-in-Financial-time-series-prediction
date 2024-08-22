@@ -21,13 +21,13 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["index"] 
+TYPE_OF_DATA = ["fx", "commodity"] 
 RTRN = [True]
 EXOGENOUS_DATA = [True, False]
-TICKER = ["S&P 500", "DOWJ", "NASDAQ", "FTSE 100"] # "NASDAQ Composite", "Dow Jones Industrial Average"
-FREQUENCY = ["minutely"]
-START_DATE = ["2024-08-16"] 
-END_DATE = ["2024-08-17"] 
+TICKER = ["USD/GBP", "WTI"] # "NASDAQ Composite", "Dow Jones Industrial Average"
+FREQUENCY = ["daily", "weekly"]
+START_DATE = ["2022-01-01", "2019-01-01"] 
+END_DATE = ["2024-01-01"] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
