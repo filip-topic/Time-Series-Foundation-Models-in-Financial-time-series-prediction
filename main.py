@@ -21,13 +21,13 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["index", "fx", "commodity", "crypto"] 
+TYPE_OF_DATA = ["index"] 
 RTRN = [True]
-EXOGENOUS_DATA = [True]
-TICKER = ["NATURAL_GAS"] # "NASDAQ Composite", "Dow Jones Industrial Average"
-FREQUENCY = ["weekly"]
-START_DATE = ["2019-01-01"] 
-END_DATE = ["2024-01-01"] 
+EXOGENOUS_DATA = [True, False]
+TICKER = ["S&P 500", "DOWJ", "NASDAQ", "FTSE 100"] # "NASDAQ Composite", "Dow Jones Industrial Average"
+FREQUENCY = ["minutely"]
+START_DATE = ["2024-08-16"] 
+END_DATE = ["2024-08-17"] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
@@ -101,7 +101,7 @@ def filter_combinations(params):
         return False
     if params.type_of_data == "crypto" and params.ticker not in ["BTC", "ETH"]:
         return False
-    if params.type_of_data == "exchange_rate" and params.ticker not in ["USD/GBP"]:
+    if params.type_of_data == "fx" and params.ticker not in ["USD/GBP"]:
         return False
     if params.type_of_data == "commodity" and params.ticker not in ["WTI", "NATURAL_GAS"]:
         return False
@@ -125,14 +125,14 @@ def filter_combinations(params):
         return False
     if params.frequency == "daily" and gap > 740:
         return False
+    if params.frequency == "weekly" and params.start_date != "2019-01-01":
+        return False
+    if params.frequency == "daily" and params.start_date != "2022-01-01":
+        return False
     
     # start and end time cosntraints
         # this is to make sure we only request the data we can get
     if params.type_of_data in ["crypto", "exchange_rate"] and params.frequency == "minutely" and params.end_date != tomorrow_date:
-        return False
-    
-        # this is to make sure we only get one day worth od index data (yesterday)
-    if params.type_of_data == "index" and params.frequency == "minutely" and params.end_date != today_date:
         return False
     
     # exogenous variables constraint
@@ -140,10 +140,11 @@ def filter_combinations(params):
         return False
     if params.exogenous_data == True and params.type_of_data not in ["index", "fx"]:
         return False
-
-    # fine-tune length constraint
-    """if params.ft_length != 4 * params.context_length:
-        return False"""
+    
+    # temp constraints
+    if params.ticker == "WTI" and params.frequency == "daily":
+        return False
+    
 
     return True
 

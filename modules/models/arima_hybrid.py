@@ -25,7 +25,9 @@ def get_arima_timegpt_predictions(data, prediction_horizon, frequency, error_tra
         valid = list(data.iloc[test_index]["y"])
         timestamp = list(data.iloc[test_index]["ds"])
 
-        arima_model = arima.get_autoarima(train)
+        if i == 0:
+            arima_model = arima.get_autoarima(train)
+
         arima_prediction = arima.autoarima_predictions(arima_model, prediction_horizon)
 
         predictions.append(arima_prediction[0])
@@ -33,7 +35,6 @@ def get_arima_timegpt_predictions(data, prediction_horizon, frequency, error_tra
         timestamps.append(timestamp[0])
 
         i +=1
-        print(f"error {i} calculated")
 
     errors = np.array(actual) - np.array(predictions)
 
@@ -48,8 +49,8 @@ def get_arima_timegpt_predictions(data, prediction_horizon, frequency, error_tra
 
     error_forecast = timegpt.get_timegpt_forecast(data=d, prediction_length=prediction_horizon, frequency=frequency, ft_steps=50, x=x)
     
-    model = arima.get_autoarima(data)
-    forecast = arima.autoarima_predictions(model, prediction_horizon)
+    #model = arima.get_autoarima(data)
+    forecast = arima.autoarima_predictions(arima_model, prediction_horizon)
 
-    return forecast+error_forecast
+    return list(np.array(forecast)+np.array(error_forecast))
 

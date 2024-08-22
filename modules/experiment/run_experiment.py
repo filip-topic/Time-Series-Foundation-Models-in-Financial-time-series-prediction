@@ -69,9 +69,9 @@ def save_results(prediction_length,
     # experiment name
     if "/" in ticker:
         ticker = ticker.replace("/", "")
-    experiment_name = f"T={ticker}__FR={frequency}__T_O_D={type_of_data}__FO={folds}__C_L_T_S={context_length}__S_D={start_date}__E_D={end_date}__FT_L={ft_length}__FT_F={ft_frequency}__FT_G={ft_gap}__TSCV_R={tscv_repeats}.csv"
+    experiment_name = f"T={ticker}_FR={frequency}_TOD={type_of_data}_FO={folds}_CLTS={context_length}_SD={start_date}_ED={end_date}_FTL={ft_length}_FTF={ft_frequency}_FTG={ft_gap}_TSCVR={tscv_repeats}_BS={batch_size}_ME={max_epochs}.csv"
 
     # saving the results
-    result_saver.save_results(r, experiment_name, type="evaluation")
-    result_saver.save_results(p, experiment_name, type="prediction")    
+    result_saver.save_results(r, experiment_name, type="evaluation", partial = True)
+    result_saver.save_results(p, experiment_name, type="prediction", partial = True)    
 

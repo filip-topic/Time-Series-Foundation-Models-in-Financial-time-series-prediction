@@ -66,7 +66,7 @@ def arima_forecast(model, prediction_length):
 
 # Uses AIC to chose p, q and KPSS unit root test for d
 def get_autoarima(data):
-   return pm.auto_arima(data["y"], suppress_warnings=True, stepwise = False, seasonal = False)
+   return pm.auto_arima(data["y"], suppress_warnings=True, stepwise = False, seasonal = False, error_action="ignore")
 
 def autoarima_predictions(model, prediction_length):
    return list(model.predict(n_periods = prediction_length))

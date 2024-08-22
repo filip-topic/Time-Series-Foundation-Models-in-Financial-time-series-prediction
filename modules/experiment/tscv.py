@@ -15,8 +15,9 @@ sys.path.append(base_dir)
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-from modules.models import arima, lag_llama, autoregressor, prpht, timegpt
+from modules.models import arima, lag_llama, autoregressor, prpht, timegpt, arima_hybrid
 from modules.fine_tuning import lag_llama_ft
+
 
 
 def mean_directional_accuracy(actual, predicted, last_train_point = None):
@@ -295,14 +296,17 @@ def get_tscv_results(data,
     
 
     # initializing empty prediction dataframes
-    arima_preds = []
+    '''arima_preds = []
     llama_preds = []
     autoregressor_preds = []
     ft_llama_preds = []
     prophet_preds = []
-    time_gpt_preds = []
+    time_gpt_preds = []'''
     ft_time_gpt_preds = []
-    ev_ft_time_gpt_preds = []
+    if exogenous_data is not None:
+        ev_ft_time_gpt_preds = []
+    '''if context_length >= 128:
+        arima_gpt_preds = []'''
     actual = []
     timestamps = []
 
@@ -345,19 +349,22 @@ def get_tscv_results(data,
         timestamp = list(data.iloc[test_index]["ds"])
 
         # inputting data into the models
-        arima_model = arima.get_autoarima(train)
+        '''arima_model = arima.get_autoarima(train)
         autoarima_predictions = arima.autoarima_predictions(arima_model, prediction_horizon)
         lag_llama_predictions, tss = lag_llama.get_lam_llama_forecast(train, prediction_horizon, context_length=context_length, frequency=frequency)
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
         prophet_predictions = prpht.get_prophet_predictions(train, prediction_horizon)
-        time_gpt_predictions = timegpt.get_timegpt_forecast(data.iloc[timegpt_index], prediction_horizon, frequency)
+        time_gpt_predictions = timegpt.get_timegpt_forecast(data.iloc[timegpt_index], prediction_horizon, frequency)'''
         ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[timegpt_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100)
         if exogenous_data is not None:
             ev_ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[timegpt_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100, x=exogenous_data)
+        '''if context_length >= 128:
+            arima_gpt_predictions = arima_hybrid.get_arima_timegpt_predictions(data=train, prediction_horizon=prediction_horizon, frequency=frequency, error_train_size= 64)'''
+        
 
 
-        ######################### fine-tuning lag-llama and getting predictions ##############################
+        '''######################### fine-tuning lag-llama and getting predictions ##############################
 
         if (i % fine_tune_frequency == 0):
 
@@ -379,18 +386,20 @@ def get_tscv_results(data,
         ##########################################################################################
 
         d = lag_llama.prepare_data(train, prediction_length=prediction_horizon, frequency=frequency)
-        ft_lag_llama_predictions = lag_llama_ft.make_predictions(predictor = predictor, data = d)
+        ft_lag_llama_predictions = lag_llama_ft.make_predictions(predictor = predictor, data = d)'''
 
         #appending the predictions to the preds lists
-        arima_preds.append(autoarima_predictions[0])
+        '''arima_preds.append(autoarima_predictions[0])
         llama_preds.append(lag_llama_predictions[0])
         autoregressor_preds.append(autoregressor_predictions[0])
         ft_llama_preds.append(ft_lag_llama_predictions[0])
         prophet_preds.append(prophet_predictions[0])
-        time_gpt_preds.append(time_gpt_predictions[0])
+        time_gpt_preds.append(time_gpt_predictions[0])'''
         ft_time_gpt_preds.append(ft_time_gpt_predictions[0])
         if exogenous_data is not None:
             ev_ft_time_gpt_preds.append(ev_ft_time_gpt_predictions[0])
+        '''if context_length >= 128:
+            arima_gpt_preds.append(arima_gpt_predictions[0])'''
         # appending the actual values amnd timestamp
         # actual values
         actual.append(valid[0])
@@ -408,27 +417,31 @@ def get_tscv_results(data,
     
     # filling in the results
     results = pd.DataFrame(columns=metrics)
-    results.loc["arima"] = fill_metrics(actual, arima_preds)
+    '''results.loc["arima"] = fill_metrics(actual, arima_preds)
     results.loc["autoregressor"] = fill_metrics(actual, autoregressor_preds)
     results.loc["prophet"] = fill_metrics(actual, prophet_preds)
     results.loc["lag_llama"] = fill_metrics(actual, llama_preds)
     results.loc["ft_lag_llama"] = fill_metrics(actual, ft_llama_preds)
-    results.loc["timeGPT"] = fill_metrics(actual, time_gpt_preds)
+    results.loc["timeGPT"] = fill_metrics(actual, time_gpt_preds)'''
     results.loc["ft_timeGPT"] = fill_metrics(actual, ft_time_gpt_preds)
     if exogenous_data is not None:
         results.loc["ev_ft_timeGPT"] = fill_metrics(actual, ev_ft_time_gpt_preds)
+    '''if context_length >= 128:
+        results.loc["arima_gpt"] = fill_metrics(actual, arima_gpt_preds)'''
 
     # filling in the predictions
     predictions = pd.DataFrame()
-    predictions["arima"] = arima_preds
+    '''predictions["arima"] = arima_preds
     predictions["autoregressor"] = autoregressor_preds
     predictions["prophet"] = prophet_preds
     predictions["lag_llama"] = llama_preds
     predictions["ft_lag_llama"] = ft_llama_preds
-    predictions["timeGPT"] = time_gpt_preds
+    predictions["timeGPT"] = time_gpt_preds'''
     predictions["ft_timeGPT"] = ft_time_gpt_preds
     if exogenous_data is not None:
         predictions["ev_ft_timeGPT"] = ev_ft_time_gpt_preds
+    '''if context_length >= 128:
+        predictions["arima_gpt"] = arima_gpt_preds'''
     predictions["actual"] = actual
     predictions["timestamp"] = timestamps
     # return statement

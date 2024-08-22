@@ -145,6 +145,10 @@ def get_data(**kwargs):
         df = df[(df["ds"] >= start_date) & (df["ds"] < end_date)]
     
 
+    # reversing the data from alphavantage
+    if data_type in ["commodity", "crypto", "fx"]:
+        df = df.iloc[::-1].reset_index(drop=True)
+
     if kwargs["rtrn"]:
         returns_df = df.copy()
     
@@ -157,7 +161,6 @@ def get_data(**kwargs):
         
         return returns_df
 
-    
     return df
 
 
