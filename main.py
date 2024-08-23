@@ -24,9 +24,9 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 TYPE_OF_DATA = ["cc"] 
 RTRN = [True]
 EXOGENOUS_DATA = [True, False]
-TICKER = ["USD/GBP"] 
-FREQUENCY = ["daily"]
-START_DATE = ["2022-01-01"] 
+TICKER = ["Aggregate", "Delayable", "Social", "Staple", "Work Related"]
+FREQUENCY = ["daily", "weekly"]
+START_DATE = ["2022-01-01", "2019-01-01"] 
 END_DATE = ["2024-01-01"] 
 
 # experiment-specific parameters
@@ -38,7 +38,7 @@ TSCV_REPEATS = [6]
 # fine-tuning parameters
 BATCH_SIZE = [5] # fixed
 MAX_EPOCHS = [4] # fixed
-FT_LENGTH = [200]
+FT_LENGTH = [200, 100]
 FT_FREQUENCY = [5] 
 FT_GAP = [0]
 
@@ -105,6 +105,8 @@ def filter_combinations(params):
         return False
     if params.type_of_data == "commodity" and params.ticker not in ["WTI", "NATURAL_GAS"]:
         return False
+    if params.type_of_data == "cc" and params.ticker not in ["Aggregate", "Delayable", "Social", "Staple", "Work Related"]:
+        return False
 
     # frequency constraints
     if params.type_of_data in ["commodity"] and params.frequency in ["minutely", "hourly"]: # we can only get daily, weekly and monthly data
@@ -141,7 +143,11 @@ def filter_combinations(params):
     if params.exogenous_data == True and params.type_of_data not in ["index", "fx"]:
         return False
     
-    # temp constraints
+    # ft constraints
+    if params.type_of_data != "cc" and params.frequency != "weekly" and params.ft_length != 200:
+        return False
+    if params.type_of_data == "cc" and params.frequency == "weekly" and params.ft_length != 100:
+        return False
 
     
 
