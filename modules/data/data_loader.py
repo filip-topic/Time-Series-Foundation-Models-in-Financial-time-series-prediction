@@ -15,17 +15,23 @@ def get_data(**kwargs):
 
     data_type = kwargs["type"]
     frequency = kwargs["frequency"]
-    # for credit card data:
-    if data_type == "credit_card":
-        df = data_reader.read_data(match = ["credit_card", frequency], location=os.path.join("data", "credit_card"))
-        return df
-
-    
     symbol = kwargs["ticker"]
     if "start" in kwargs.keys():
         start_date = kwargs["start"]
         end_date = kwargs["end"]
 
+    # for credit card data:
+    if data_type == "cc":
+        df = data_reader.read_data(match = ["credit_card", ".csv", frequency], location=os.path.join("data", "credit_card"))
+        df = df.reset_index()
+        # selecting the first column and the symbol
+        df = df.iloc[:, [0]].join(df[symbol])
+        df.columns = ["ds", "y"]
+        if "start" in kwargs.keys():
+            df = df[(df["ds"] >= start_date) & (df["ds"] < end_date)]
+        return df.dropna()
+
+    
     interval_mapping = {
         'minutely': '1min',
         'hourly': '60min',

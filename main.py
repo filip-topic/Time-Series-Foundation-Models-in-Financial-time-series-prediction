@@ -21,12 +21,12 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["fx", "commodity"] 
+TYPE_OF_DATA = ["cc"] 
 RTRN = [True]
 EXOGENOUS_DATA = [True, False]
-TICKER = ["USD/GBP", "WTI"] # "NASDAQ Composite", "Dow Jones Industrial Average"
-FREQUENCY = ["daily", "weekly"]
-START_DATE = ["2022-01-01", "2019-01-01"] 
+TICKER = ["USD/GBP"] 
+FREQUENCY = ["daily"]
+START_DATE = ["2022-01-01"] 
 END_DATE = ["2024-01-01"] 
 
 # experiment-specific parameters
@@ -142,8 +142,7 @@ def filter_combinations(params):
         return False
     
     # temp constraints
-    if params.ticker == "WTI" and params.frequency == "daily":
-        return False
+
     
 
     return True
