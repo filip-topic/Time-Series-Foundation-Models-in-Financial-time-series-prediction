@@ -24,7 +24,7 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 TYPE_OF_DATA = ["cc"] 
 RTRN = [True]
 EXOGENOUS_DATA = [True, False]
-TICKER = ["Aggregate", "Delayable", "Social", "Staple", "Work Related"]
+TICKER = ["Staple", "Work Related"]
 FREQUENCY = ["daily", "weekly"]
 START_DATE = ["2022-01-01", "2019-01-01"] 
 END_DATE = ["2024-01-01"] 
@@ -148,7 +148,12 @@ def filter_combinations(params):
         return False
     if params.type_of_data == "cc" and params.frequency == "weekly" and params.ft_length != 100:
         return False
+    if params.type_of_data == "cc" and params.frequency == "daily" and params.ft_length != 200:
+        return False
 
+    # temp constraint
+    if params.type_of_data == "cc" and params.frequency == "daily" and params.ticker == "Aggregate" and params.context_length == 32:
+        return False
     
 
     return True
