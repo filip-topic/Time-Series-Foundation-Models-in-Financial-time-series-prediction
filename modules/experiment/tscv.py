@@ -301,8 +301,8 @@ def get_tscv_results(data,
     autoregressor_preds = []
     ft_llama_preds = []
     prophet_preds = []
-    time_gpt_preds = []
-    ft_time_gpt_preds = []
+    """time_gpt_preds = []
+    ft_time_gpt_preds = []"""
     if exogenous_data is not None:
         ev_ft_time_gpt_preds = []
     '''if context_length >= 128:
@@ -355,8 +355,8 @@ def get_tscv_results(data,
         lag_llama_predictions = list(lag_llama_predictions[0].samples.mean(axis = 0))
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
         prophet_predictions = prpht.get_prophet_predictions(train, prediction_horizon)
-        time_gpt_predictions = timegpt.get_timegpt_forecast(data.iloc[timegpt_index], prediction_horizon, frequency)
-        ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[timegpt_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100)
+        """time_gpt_predictions = timegpt.get_timegpt_forecast(data.iloc[timegpt_index], prediction_horizon, frequency)
+        ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[timegpt_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100)"""
         if exogenous_data is not None:
             ev_ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[timegpt_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100, x=exogenous_data)
         '''if context_length >= 128:
@@ -394,8 +394,8 @@ def get_tscv_results(data,
         autoregressor_preds.append(autoregressor_predictions[0])
         ft_llama_preds.append(ft_lag_llama_predictions[0])
         prophet_preds.append(prophet_predictions[0])
-        time_gpt_preds.append(time_gpt_predictions[0])
-        ft_time_gpt_preds.append(ft_time_gpt_predictions[0])
+        """time_gpt_preds.append(time_gpt_predictions[0])
+        ft_time_gpt_preds.append(ft_time_gpt_predictions[0])"""
         if exogenous_data is not None:
             ev_ft_time_gpt_preds.append(ev_ft_time_gpt_predictions[0])
         '''if context_length >= 128:
@@ -422,8 +422,8 @@ def get_tscv_results(data,
     results.loc["prophet"] = fill_metrics(actual, prophet_preds)
     results.loc["lag_llama"] = fill_metrics(actual, llama_preds)
     results.loc["ft_lag_llama"] = fill_metrics(actual, ft_llama_preds)
-    results.loc["timeGPT"] = fill_metrics(actual, time_gpt_preds)
-    results.loc["ft_timeGPT"] = fill_metrics(actual, ft_time_gpt_preds)
+    r"""esults.loc["timeGPT"] = fill_metrics(actual, time_gpt_preds)
+    results.loc["ft_timeGPT"] = fill_metrics(actual, ft_time_gpt_preds)"""
     if exogenous_data is not None:
         results.loc["ev_ft_timeGPT"] = fill_metrics(actual, ev_ft_time_gpt_preds)
     '''if context_length >= 128:
@@ -436,8 +436,8 @@ def get_tscv_results(data,
     predictions["prophet"] = prophet_preds
     predictions["lag_llama"] = llama_preds
     predictions["ft_lag_llama"] = ft_llama_preds
-    predictions["timeGPT"] = time_gpt_preds
-    predictions["ft_timeGPT"] = ft_time_gpt_preds
+    """predictions["timeGPT"] = time_gpt_preds
+    predictions["ft_timeGPT"] = ft_time_gpt_preds"""
     if exogenous_data is not None:
         predictions["ev_ft_timeGPT"] = ev_ft_time_gpt_preds
     '''if context_length >= 128:

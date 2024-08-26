@@ -21,13 +21,13 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["cc"] 
+TYPE_OF_DATA = ["index", "commodity", "fx"] 
 RTRN = [True]
-EXOGENOUS_DATA = [True, False]
-TICKER = ["Staple", "Work Related"]
-FREQUENCY = ["daily", "weekly"]
-START_DATE = ["2022-01-01", "2019-01-01"] 
-END_DATE = ["2024-01-01"] 
+EXOGENOUS_DATA = [False]
+TICKER = ["S&P 500", "FTSE 100", "NASDAQ", "DOWJ", "WTI", "USD/GBP"]
+FREQUENCY = ["weekly"]
+START_DATE = ["2015-01-01"] 
+END_DATE = ["2020-01-01"] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
@@ -38,7 +38,7 @@ TSCV_REPEATS = [6]
 # fine-tuning parameters
 BATCH_SIZE = [5] # fixed
 MAX_EPOCHS = [4] # fixed
-FT_LENGTH = [200, 100]
+FT_LENGTH = [200]
 FT_FREQUENCY = [5] 
 FT_GAP = [0]
 
@@ -127,10 +127,6 @@ def filter_combinations(params):
         return False
     if params.frequency == "daily" and gap > 740:
         return False
-    if params.frequency == "weekly" and params.start_date != "2019-01-01":
-        return False
-    if params.frequency == "daily" and params.start_date != "2022-01-01":
-        return False
     
     # start and end time cosntraints
         # this is to make sure we only request the data we can get
@@ -152,8 +148,6 @@ def filter_combinations(params):
         return False
 
     # temp constraint
-    if params.type_of_data == "cc" and params.frequency == "daily" and params.ticker == "Aggregate" and params.context_length == 32:
-        return False
     
 
     return True
