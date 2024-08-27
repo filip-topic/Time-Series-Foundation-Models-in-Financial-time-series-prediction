@@ -25,8 +25,8 @@ TYPE_OF_DATA = ["index", "commodity", "fx"]
 RTRN = [True]
 EXOGENOUS_DATA = [False]
 TICKER = ["S&P 500", "FTSE 100", "NASDAQ", "DOWJ", "WTI", "USD/GBP"]
-FREQUENCY = ["weekly"]
-START_DATE = ["2015-01-01"] 
+FREQUENCY = ["daily", "weekly"]
+START_DATE = ["2018-01-01", "2015-01-01"] 
 END_DATE = ["2020-01-01"] 
 
 # experiment-specific parameters
@@ -148,7 +148,10 @@ def filter_combinations(params):
         return False
 
     # temp constraint
-    
+    if params.frequency == "daily" and params.start_date != "2018-01-01":
+        return False
+    if params.frequency == "weekly" and params.start_date != "2015-01-01":
+        return False
 
     return True
 
