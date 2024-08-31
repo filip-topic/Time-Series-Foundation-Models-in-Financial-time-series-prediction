@@ -21,24 +21,24 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["index", "commodity", "fx"] 
+TYPE_OF_DATA = ["commodity"] 
 RTRN = [True]
 EXOGENOUS_DATA = [False]
-TICKER = ["S&P 500", "FTSE 100", "NASDAQ", "DOWJ", "WTI", "USD/GBP"]
-FREQUENCY = ["daily", "weekly"]
-START_DATE = ["2018-01-01", "2015-01-01"] 
-END_DATE = ["2020-01-01"] 
+TICKER = ["WTI"]
+FREQUENCY = ["weekly"]
+START_DATE = ["2019-01-01"] 
+END_DATE = ["2024-01-01"] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
 FOLDS = [5] # fixed
-CONTEXT_LENGTH = [32, 64, 128]
+CONTEXT_LENGTH = [32]
 TSCV_REPEATS = [6] 
 
 # fine-tuning parameters
-BATCH_SIZE = [5] # fixed
-MAX_EPOCHS = [4] # fixed
-FT_LENGTH = [200]
+BATCH_SIZE = [5, 10, 20] # fixed
+MAX_EPOCHS = [4, 8, 16] # fixed
+FT_LENGTH = [64, 128, 200]
 FT_FREQUENCY = [5] 
 FT_GAP = [0]
 
@@ -139,19 +139,15 @@ def filter_combinations(params):
     if params.exogenous_data == True and params.type_of_data not in ["index", "fx"]:
         return False
     
-    # ft constraints
-    if params.type_of_data != "cc" and params.frequency != "weekly" and params.ft_length != 200:
-        return False
-    if params.type_of_data == "cc" and params.frequency == "weekly" and params.ft_length != 100:
-        return False
-    if params.type_of_data == "cc" and params.frequency == "daily" and params.ft_length != 200:
-        return False
+
 
     # temp constraint
-    if params.frequency == "daily" and params.start_date != "2018-01-01":
+    if params.ft_length == 200 and params.max_epochs == 4 and params.batch_size == 5:
         return False
-    if params.frequency == "weekly" and params.start_date != "2015-01-01":
-        return False
+
+    # because weekly cc experiments need to be run all over again with all models
+    
+
 
     return True
 

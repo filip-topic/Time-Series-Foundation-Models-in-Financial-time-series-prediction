@@ -5,7 +5,7 @@ from nixtla import NixtlaClient
 
 nixtla_client = NixtlaClient(
     #api_key=os.getenv("NIXTLA_API")
-    api_key = "nixtla-tok-co7tFFNHZUZfr0Q1FS7VlWmnzoZpWD3x0eVwRx6U3gCUWOoYkpMSf3BJC9fySpa96kb3QdDUPdIpPE9V"
+    api_key = "nixtla-tok-cbPeVBdkCzxF15OGVqvHcHMKxFbYNLPH500WpmFFrimf0zBvhH3QMmTA9w6rh5pXLf2oTej9JQ4tIARJ"
 )
 
 
@@ -39,7 +39,7 @@ def get_timegpt_forecast(data, prediction_length, frequency, ft_steps = 0, x = N
             x_df_future[col] = fcst["TimeGPT"]
 
         #merging target variable with past exogenous variables
-        data = pd.merge(data, x, on="ds")
+        data = pd.merge(data, x, on="ds", how="inner")
 
         if ft_steps > 0:
             forecast_df = nixtla_client.forecast(df = data, finetune_steps=ft_steps, X_df=x_df_future, h=prediction_length, time_col="ds", target_col="y")
