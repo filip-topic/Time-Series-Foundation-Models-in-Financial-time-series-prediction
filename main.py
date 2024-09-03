@@ -25,20 +25,20 @@ TYPE_OF_DATA = ["commodity"]
 RTRN = [True]
 EXOGENOUS_DATA = [False]
 TICKER = ["WTI"]
-FREQUENCY = ["weekly"]
-START_DATE = ["2019-01-01"] 
+FREQUENCY = ["monthly"]
+START_DATE = ["1987-01-01"] 
 END_DATE = ["2024-01-01"] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
 FOLDS = [5] # fixed
-CONTEXT_LENGTH = [32]
-TSCV_REPEATS = [6] 
+CONTEXT_LENGTH = [32, 64, 128]
+TSCV_REPEATS = [8] 
 
 # fine-tuning parameters
-BATCH_SIZE = [5, 10, 20] # fixed
-MAX_EPOCHS = [4, 8, 16] # fixed
-FT_LENGTH = [64, 128, 200]
+BATCH_SIZE = [5] # fixed
+MAX_EPOCHS = [4] # fixed
+FT_LENGTH = [200]
 FT_FREQUENCY = [5] 
 FT_GAP = [0]
 
@@ -142,8 +142,7 @@ def filter_combinations(params):
 
 
     # temp constraint
-    if params.ft_length == 200 and params.max_epochs == 4 and params.batch_size == 5:
-        return False
+    
 
     # because weekly cc experiments need to be run all over again with all models
     
