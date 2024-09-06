@@ -21,19 +21,19 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["commodity"] 
+TYPE_OF_DATA = ["fx"] 
 RTRN = [True]
 EXOGENOUS_DATA = [False]
-TICKER = ["WTI"]
-FREQUENCY = ["monthly"]
-START_DATE = ["1987-01-01"] 
-END_DATE = ["2024-01-01"] 
+TICKER = ["USD/GBP"]
+FREQUENCY = ["weekly"]
+START_DATE = ["2015-01-01"] 
+END_DATE = ["2020-01-01"] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
 FOLDS = [5] # fixed
-CONTEXT_LENGTH = [32, 64, 128]
-TSCV_REPEATS = [8] 
+CONTEXT_LENGTH = [32, 64]
+TSCV_REPEATS = [6] 
 
 # fine-tuning parameters
 BATCH_SIZE = [5] # fixed
