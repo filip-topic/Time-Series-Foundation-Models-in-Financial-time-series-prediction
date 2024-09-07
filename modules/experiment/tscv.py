@@ -277,10 +277,11 @@ def get_tscv_results(data,
                      frequency, 
                      ft_length, 
                      batch_size,
-                     max_epochs,  
-                     fine_tune_frequency = 30,
+                     max_epochs,
+                     lr,  
+                     fine_tune_frequency = 5,
                      ft_gap = 0,
-                     tscv_repeats = 5,
+                     tscv_repeats = 6,
                      exogenous_data = None):
     
     # stopping criteria for inputs that would break this function
@@ -383,7 +384,8 @@ def get_tscv_results(data,
             predictor = lag_llama_ft.get_predictor(prediction_length=1, 
                                        context_length=context_length, 
                                        batch_size=batch_size, 
-                                       max_epochs=max_epochs)
+                                       max_epochs=max_epochs,
+                                       lr=lr)
             
             predictor = predictor.train(ft_train_data, 
                             cache_data = True, 

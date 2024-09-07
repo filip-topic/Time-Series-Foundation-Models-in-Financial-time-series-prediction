@@ -13,7 +13,7 @@ import pandas as pd
 
 from lag_llama.gluon.estimator import LagLlamaEstimator
 
-def get_predictor(prediction_length, context_length, batch_size = 10, max_epochs = 30):
+def get_predictor(prediction_length, context_length, batch_size = 10, max_epochs = 30, lr = 5e-4):
     ckpt_path = "modules/models/llama/ft-lag-llama.ckpt"
 
     import torch
@@ -32,7 +32,7 @@ def get_predictor(prediction_length, context_length, batch_size = 10, max_epochs
             # scaling="mean",
             nonnegative_pred_samples=True,
             aug_prob=0,
-            lr=5e-4,
+            lr=lr,
 
             # estimator args
             input_size=estimator_args["input_size"],

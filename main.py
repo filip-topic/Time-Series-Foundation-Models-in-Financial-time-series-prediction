@@ -21,26 +21,28 @@ yesterday_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 # data-specific parameters
-TYPE_OF_DATA = ["fx"] 
+TYPE_OF_DATA = ["commodity"] 
 RTRN = [True]
 EXOGENOUS_DATA = [False]
-TICKER = ["USD/GBP"]
+TICKER = ["WTI"]
 FREQUENCY = ["weekly"]
-START_DATE = ["2015-01-01"] 
-END_DATE = ["2020-01-01"] 
+START_DATE = ["2019-01-01"] 
+END_DATE = ["2024-01-01"] 
 
 # experiment-specific parameters
 PREDICTION_LENGTH = [1] #fixed
 FOLDS = [5] # fixed
-CONTEXT_LENGTH = [32, 64]
+CONTEXT_LENGTH = [32]
 TSCV_REPEATS = [6] 
 
+
 # fine-tuning parameters
-BATCH_SIZE = [5] # fixed
-MAX_EPOCHS = [4] # fixed
+BATCH_SIZE = [5, 10, 20] # fixed
+MAX_EPOCHS = [4, 8] # fixed
 FT_LENGTH = [200]
 FT_FREQUENCY = [5] 
 FT_GAP = [0]
+LEARNING_RATE = [0.005, 0.00005]
 
 # filter-specific 
 
@@ -62,7 +64,8 @@ ExperimentParams = namedtuple('ExperimentParams', [
     'ft_gap',
     "tscv_repeats",
     "rtrn",
-    "exogenous_data"
+    "exogenous_data",
+    "learning_rate"
 ])
 
 # experiment parameters
@@ -82,8 +85,8 @@ parameters = [
     FT_GAP,
     TSCV_REPEATS,
     RTRN,
-    EXOGENOUS_DATA
-]
+    EXOGENOUS_DATA,
+    LEARNING_RATE]
 
 # all combinations of parameters
 all_combinations = itertools.product(*parameters)
@@ -173,6 +176,7 @@ for combination in valid_combinations_named:
         ft_gap=combination.ft_gap,
         tscv_repeats=combination.tscv_repeats,
         rtrn = combination.rtrn,
-        exogenous_data = combination.exogenous_data
+        exogenous_data = combination.exogenous_data,
+        learning_rate = combination.learning_rate
     )
     #break # for testing purposes

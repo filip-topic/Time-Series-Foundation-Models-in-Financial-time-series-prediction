@@ -19,6 +19,7 @@ def save_results(prediction_length,
                 end_date,
                 tscv_repeats,
                 rtrn,
+                learning_rate,
                 exogenous_data = False):
 
 
@@ -59,7 +60,8 @@ def save_results(prediction_length,
                            fine_tune_frequency=ft_frequency,
                            ft_gap = ft_gap,
                            tscv_repeats=tscv_repeats,
-                           exogenous_data=x_df)
+                           exogenous_data=x_df,
+                           lr = learning_rate)
     
     end = time.time()
 
@@ -69,7 +71,7 @@ def save_results(prediction_length,
     # experiment name
     if "/" in ticker:
         ticker = ticker.replace("/", "")
-    experiment_name = f"T={ticker}_FR={frequency}_TOD={type_of_data}_FO={folds}_CLTS={context_length}_SD={start_date}_ED={end_date}_FTL={ft_length}_FTF={ft_frequency}_FTG={ft_gap}_TSCVR={tscv_repeats}_BS={batch_size}_ME={max_epochs}.csv"
+    experiment_name = f"T={ticker}_FR={frequency}_TOD={type_of_data}_FO={folds}_CLTS={context_length}_SD={start_date}_ED={end_date}_FTL={ft_length}_FTF={ft_frequency}_FTG={ft_gap}_TSCVR={tscv_repeats}_BS={batch_size}_ME={max_epochs}_LR={learning_rate}.csv"
 
     # saving the results
     result_saver.save_results(r, experiment_name, type="evaluation")
