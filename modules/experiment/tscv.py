@@ -278,7 +278,8 @@ def get_tscv_results(data,
                      ft_length, 
                      batch_size,
                      max_epochs,
-                     lr,  
+                     lr,
+                     fts,  
                      fine_tune_frequency = 5,
                      ft_gap = 0,
                      tscv_repeats = 6,
@@ -362,9 +363,9 @@ def get_tscv_results(data,
         autoregressor_predictions = autoregressor.get_autoregressor_prediction(train, prediction_horizon)
         prophet_predictions = prpht.get_prophet_predictions(train, prediction_horizon)
         time_gpt_predictions = timegpt.get_timegpt_forecast(data.iloc[train_index], prediction_horizon, frequency)
-        ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[ft_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100)
+        ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[ft_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=fts)
         if exogenous_data is not None:
-            ev_ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[ft_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=100, x=exogenous_data.iloc[ft_index])
+            ev_ft_time_gpt_predictions = timegpt.get_timegpt_forecast(data=data.iloc[ft_index], prediction_length=prediction_horizon, frequency=frequency, ft_steps=fts, x=exogenous_data.iloc[ft_index])
         '''if context_length >= 128:
             arima_gpt_predictions = arima_hybrid.get_arima_timegpt_predictions(data=train, prediction_horizon=prediction_horizon, frequency=frequency, error_train_size= 64)'''
         

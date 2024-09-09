@@ -5,7 +5,7 @@ from nixtla import NixtlaClient
 
 nixtla_client = NixtlaClient(
     #api_key=os.getenv("NIXTLA_API")
-    api_key = "nixtla-tok-cbPeVBdkCzxF15OGVqvHcHMKxFbYNLPH500WpmFFrimf0zBvhH3QMmTA9w6rh5pXLf2oTej9JQ4tIARJ"
+    api_key = "nixtla-tok-co7tFFNHZUZfr0Q1FS7VlWmnzoZpWD3x0eVwRx6U3gCUWOoYkpMSf3BJC9fySpa96kb3QdDUPdIpPE9V"
 )
 
 

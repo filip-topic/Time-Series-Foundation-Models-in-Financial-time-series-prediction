@@ -37,12 +37,13 @@ TSCV_REPEATS = [6]
 
 
 # fine-tuning parameters
-BATCH_SIZE = [5, 10, 20] # fixed
-MAX_EPOCHS = [4, 8] # fixed
+BATCH_SIZE = [5] # fixed
+MAX_EPOCHS = [4] # fixed
 FT_LENGTH = [200]
 FT_FREQUENCY = [5] 
 FT_GAP = [0]
-LEARNING_RATE = [0.005, 0.00005]
+LEARNING_RATE = [0.0005]
+FINETUNE_STEPS = [10, 50]
 
 # filter-specific 
 
@@ -65,7 +66,8 @@ ExperimentParams = namedtuple('ExperimentParams', [
     "tscv_repeats",
     "rtrn",
     "exogenous_data",
-    "learning_rate"
+    "learning_rate",
+    "finetune_steps"
 ])
 
 # experiment parameters
@@ -86,7 +88,8 @@ parameters = [
     TSCV_REPEATS,
     RTRN,
     EXOGENOUS_DATA,
-    LEARNING_RATE]
+    LEARNING_RATE,
+    FINETUNE_STEPS]
 
 # all combinations of parameters
 all_combinations = itertools.product(*parameters)
@@ -177,6 +180,7 @@ for combination in valid_combinations_named:
         tscv_repeats=combination.tscv_repeats,
         rtrn = combination.rtrn,
         exogenous_data = combination.exogenous_data,
-        learning_rate = combination.learning_rate
+        learning_rate = combination.learning_rate,
+        fine_tune_steps=combination.finetune_steps
     )
     #break # for testing purposes

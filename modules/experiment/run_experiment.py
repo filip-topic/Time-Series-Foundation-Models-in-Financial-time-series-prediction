@@ -20,6 +20,7 @@ def save_results(prediction_length,
                 tscv_repeats,
                 rtrn,
                 learning_rate,
+                fine_tune_steps,
                 exogenous_data = False):
 
 
@@ -61,7 +62,8 @@ def save_results(prediction_length,
                            ft_gap = ft_gap,
                            tscv_repeats=tscv_repeats,
                            exogenous_data=x_df,
-                           lr = learning_rate)
+                           lr = learning_rate,
+                           fts=fine_tune_steps)
     
     end = time.time()
 
