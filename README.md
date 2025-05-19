@@ -6,3 +6,5 @@ data_analysus.ipynb is used to analyze the results of the experiments.
 
 All source code is in the modules/ directory
 
+Read the Filip_Topic_Dissertation_Report.pdf for the full report of the project
+
