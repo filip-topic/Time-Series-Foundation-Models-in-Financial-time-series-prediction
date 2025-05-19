@@ -1,16 +1,8 @@
 # MSc_dissertation
 
-Version of gluonts has to be 0.14.0 in the requirements.txt in lag-llama submodule
+The experiments are ran using the main.py script. In lines 24-46 user can select the parameters of the experiment whether they be data-parameters, experiment-parameters and fine-tuning parameters. Script automatically downloads the data, trains/fine-tunes the model, runs them on the data, applies Time-series Cross-Validation and saves the results.
 
+data_analysus.ipynb is used to analyze the results of the experiments.
 
-Problems when installing "gluonts" package for the DeepAR model. Solved by running:
+All source code is in the modules/ directory
 
-pip install numpy==1.23.5
-pip install mxnet -f https://dist.mxnet.io/python/cpu
-
--there was "error building numpy wheel", but commands above solve it
-
-
-added .float() to line 553 of modules/models/llama/lag_llama/model/module.py, otherwise big ERROR
-
-changed torch.device("cuda") to torch.device("cpu") in modules\models\llama\lag_llama\gluon\estimator.py line 304
