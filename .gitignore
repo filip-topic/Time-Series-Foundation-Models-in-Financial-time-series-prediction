@@ -1,9 +1,12 @@
-data
+data/
 lightning_logs
 results
 APIs
 various documents
-papers
-experiments
+papers/
+experiments/
 temp overleaf chapter
 diagrams
+notebook.ipynb
+various_documents/
+dissertation pdfs/
