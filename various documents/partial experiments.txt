@@ -1,7 +1,0 @@
-daily 2020-01-01 to 2022-01-01 indices, fx, commodities and cc         DONE
-
-weekly 2017-01-01 to 2022-01-01 indices, fx, commodities     DONE
-
-daily 2018-01-01 to 2020-01-01 indices, fx, commodities
-
-weekly 2015-01-01 to 2020-01-01 indices, fx, commodities
